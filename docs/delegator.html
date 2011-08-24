@@ -1,7 +1,7 @@
 <html>
 
 <head>
-  <title> delegator Documentation </title>
+  <title> cluster-delegator Documentation </title>
 </head>
 
 <body>
@@ -15,7 +15,7 @@
 
 <p> 
 This is the documentation for the
-delegator library by Shaun Harker. 8/23/11
+cluster-delegator library by Shaun Harker. 8/23/11
 contact: sharker@math.rutgers.edu 
 </p>
 
@@ -24,30 +24,9 @@ contact: sharker@math.rutgers.edu
 <p>
 Installation is not necessary as this is a header-only library. 
 This is accomplished by defining every non-template function as "inline".
-However, Boost and open-mpi are necessary. You may already have them, however.
-For starters, try the following:
-</p>
+However, there are two dependencies: Boost and open-mpi. </p>
 
-
-<p> Download <code> delegator.tar.gz </code> and decompress it with the unix command 
-<pre> 
-      tar xvfz delegator.tar.gz
-</pre>
-Then type
-<pre> 
-     cd delegator
-     cd example
-     make clean
-     make
-     mpiexec -np 3 ./example1
-</pre>
-</p>
-<p>
-At this point, it is either working or else you have been stopped by compiler or linker 
-errors. If this is so, then likely either Boost or open-mpi is not installed, or not installed
-properly. (For example, perhaps you have Boost, but the libaries are built 32 bit.)
-
-Your best bet is to install Boost and open-mpi in /usr/local/. This puts everything in
+<p> Your best bet is to install Boost and open-mpi in /usr/local/. This puts everything in
 a nice standard place, and one does not need to fuss as much to make sure headers and
 libraries are found. Here are the relevant links for installation: </p>
 
@@ -62,10 +41,20 @@ instructions to build boost
 </a>
 </p>  
 
-<p> By the way, I'm assuming either a linux or Max OS X environment. If you use windows,
-you might be out of luck. There is cygwin, and you can try your luck, but I can offer
-zero support on this! Perhaps you can shell to a computer with a unix environment and
-install there, or else make yourself a linux partition. </p>
+<p> Once Boost and open-mpi are installed, go ahead and obtain the software:
+<pre> 
+svn checkout http://cluster-delegator.googlecode.com/svn/trunk/ cluster-delegator
+</pre>
+Then type
+<pre> 
+     cd cluster-delegator
+     cd example
+     make clean
+     make
+     mpiexec -np 3 ./example1
+</pre>
+</p>
+<p>
 
 
 <h2>(1) target audience </h2>
@@ -89,7 +78,7 @@ The person who wants to use this software is a person who
 <h2>(2) getting oriented </h2>
 
 <p>
-The quickest way to learn how to use delegator
+The quickest way to learn how to use cluster-delegator
 is to look at the examples 
 <pre>
    ./examples/example1.cpp and 
