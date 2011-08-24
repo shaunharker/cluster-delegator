@@ -1,0 +1,48 @@
+/*
+ *  delegator.hpp
+ */
+
+//          Copyright Shaun Harker 2011.
+// Distributed under the Boost Software License, Version 1.0.
+//    (See accompanying file LICENSE_1_0.txt or copy at
+//          http://www.boost.org/LICENSE_1_0.txt)
+
+#include <set>
+#include <deque>
+#include <unistd.h>
+
+/***************************************
+ *         USER INTERFACE              *
+ ***************************************/
+
+namespace delegator {
+  
+  template < class Process >
+  int Start ( void ) {
+    int argc = 0; char * * argv = NULL;
+    return Start < Process > ( argc, argv );
+  } /* Start<> */
+
+  template < class Process >
+  int Start ( int argc, char * argv [] ) {
+    typedef Coordinator_Worker_Scheme Scheme;
+    return RunDelegator < Process, Scheme, Communicator > ( argc, argv );
+  } /* Start<> */
+
+  // RunDelegator (more advanced interface)
+  template < class Process, class Scheme, class Comm >
+  int RunDelegator ( int argc, char * argv [] ) {
+    /* Create Process, Scheme, and Communicator */
+    Comm my_communicator;
+    Scheme my_scheme ( argc, argv );
+    Process my_process;
+    
+    // Run Scheme until it finishes
+    my_communicator . initialize ();
+    my_scheme . run ( & my_process, & my_communicator );
+    my_communicator . finalize ();
+    return 0; 
+  } /* RunDelegator<> */
+}
+
+

@@ -1,0 +1,20 @@
+
+1. Build examples by typing
+
+make clean
+make
+
+2. Test examples by typing
+
+mpiexec -np 4 ./example1
+
+and 
+
+mpiexec -np 4 ./example2 42 is the answer
+
+3. Take a look at the code: 
+   example1.cpp
+   example2.cpp
+   makefile
+
+
