@@ -7,7 +7,7 @@
 <body>
 
 <center>
-<h1> delegator 
+<h1> cluster-delegator 
 <hr />
 
 </h1>
@@ -16,6 +16,8 @@
 <p> 
 This is the documentation for the
 cluster-delegator library by Shaun Harker. 8/23/11
+</p>
+<p>
 contact: sharker@math.rutgers.edu 
 </p>
 
@@ -67,11 +69,11 @@ many processes to do embarrassingly parallel computation -- at least in C++.
 <p>
 The person who wants to use this software is a person who
 <ul>
-	<li> can write in C++
-	<li> has a large computation involving many parallel, non-communicating tasks
+	<li> can write in C++ </li>
+	<li> has a large computation involving many parallel, non-communicating tasks </li>
 	<li> wants to have all the serialization and MPI details completely removed
   from their code for the sake of tidiness, simplicity, and ease of 
-  debugging what really matters: their computation!
+  debugging what really matters: their computation! </li>
 </ul>
 </p>
 
@@ -241,13 +243,13 @@ need to know). But you do need to know more or less how it works:
 </p>
 
 <ul>
-<li> Of the N processes, N-1 are workers and 1 is a coordinator.
+<li> Of the N processes, N-1 are workers and 1 is a coordinator. </li>
 
 <li> The coordinator is responsible for writing "jobs" and
-reading "results".
+reading "results". </li>
 
 <li> The workers are responsible for accepting "jobs" and working them,
-thus producing "results"
+thus producing "results" </li>
 </ul>
 
 <p>
@@ -261,7 +263,7 @@ In step-by-step detail:
     <pre>
         void Process::command_line ( int argc, char * argv [] );
     </pre>
-    to store/process the command line arguments.
+    to store/process the command line arguments. </li>
     
 	<li> The coordinator process runs (one time only) the method  
 		<pre>
@@ -269,14 +271,14 @@ In step-by-step detail:
 		</pre>
 		
 The next three things happen in an interspersed fashion, 
-on demand as workers, jobs, and results become available:
+on demand as workers, jobs, and results become available:</li>
 
 	<li> The coordinator process calls the method 
 		<pre>
         int Process::write ( Message & job_message )
 		</pre>
 
-    in order to create "job_message" which is sent to a worker.
+    in order to create "job_message" which is sent to a worker.</li>
 
 	<li> A worker process calls the method 
     <pre>
@@ -285,21 +287,21 @@ on demand as workers, jobs, and results become available:
 		</pre>
 
      on "job_message" received from the coordinator in order to
-     produce "result_message" which is sent back to the coordinator.
+     produce "result_message" which is sent back to the coordinator.</li>
 
 	<li> The coordinator process calls the method
     <pre>
         void Process::write ( constMessage & result_message )
 		</pre>
 
-    on the "result_message" which was received from a worker.
+    on the "result_message" which was received from a worker.</li>
 
 	<li> The coordinator process runs (one time only) the method
 		<pre>
 
         void Process::finalize ( void );
 		</pre>
-
+</li>
 </ol>
 <p>
 Note that steps [3] [4] and [5] will happen many times and be interspersed,
@@ -318,20 +320,20 @@ Coordinator_Worker_Process. They are:
 </p>
 
 <dl>
-<dt> command_line 
-<dd> set command line arguments so they are available to Process
-<dt> initialize 
-<dd> prepare in some fashion for what is to come
-<dt> write
+<dt> command_line </dt>
+<dd> set command line arguments so they are available to Process</dd>
+<dt> initialize </dt>
+<dd> prepare in some fashion for what is to come</dd>
+<dt> write </dt>
 <dd>   come up with a job to send to a worker and return 0
        OR realize there are no jobs left to send and return 1
-       OR stall for results before producing a job and return 2   
-<dt> work 
-<dd> work a job and produce a result
-<dt> read 
-<dd> accept a result and handle it in some way
-<dt> finalize 
-<dd> finish up and do whatever is left to do
+       OR stall for results before producing a job and return 2  </dd> 
+<dt> work </dt>
+<dd> work a job and produce a result </dd>
+<dt> read </dt>
+<dd> accept a result and handle it in some way </dd>
+<dt> finalize </dt>
+<dd> finish up and do whatever is left to do </dd>
 </dl>
 <p>
 Each of these methods has a default behavior, specified in the base
@@ -343,12 +345,12 @@ worker processes, and methods called by both.
 </p>
 
 <dl>
-<dt> All processes: 
-<dd> command_line
-<dt> Coordinator only: 
-<dd> initialize, write, read, finalize
-<dt> Worker only: 
-<dd> work
+<dt> All processes: </dt>
+<dd> command_line </dd>
+<dt> Coordinator only: </dt>
+<dd> initialize, write, read, finalize </dd>
+<dt> Worker only: </dt>
+<dd> work </dd>
 </dl>
 
 <p>
@@ -413,13 +415,13 @@ redundancy and give them again here.
 
 <dl>
 
-<dt> command_line:
-<dd>  sets member variables argc and argv to match the passed parameters
+<dt> command_line: </dt>
+<dd>  sets member variables argc and argv to match the passed parameters </dd>
 
-<dt> initialize:
-<dd>  does nothing
+<dt> initialize: </dt>
+<dd>  does nothing </dd>
 
-<dt> write:   (Read this part carefully.)
+<dt> write:   (Read this part carefully.) </dt>
 <dd>  checks if there is an item on member variable
 	<pre>
       std::stack&ltMessage&gt JOBS_TO_SEND
@@ -428,18 +430,18 @@ redundancy and give them again here.
   job_message and returns code 0, which means "i produced a job."
   Otherwise, it returns code 1, which means "no jobs left to produce"
   It NEVER returns code 2, which would mean "I am waiting on information
-                                 before I can produce more jobs"
+                                 before I can produce more jobs" </dd>
 
-<dt> work:
-<dd>  does nothing
+<dt> work: </dt>
+<dd>  does nothing </dd>
 
-<dt> read:
-<dd> pushes the message "result_message" onto the member variable
+<dt> read: </dt>
+<dd> pushes the message "result_message" onto the member variable 
 	<pre>
        std::stack&ltMessage&gt RECEIVED_RESULTS
-	</pre>
-<dt> finalize:
-<dd>  does nothing.
+	</pre> </dd>
+<dt> finalize: </dt>
+<dd>  does nothing. </dd>
 </dl>
 
 <p>
@@ -460,22 +462,22 @@ initialize, work, and finalize. This is what is done in
 <p>
 Then we will have
 <dl>
-<dt> initialize:
+<dt> initialize: </dt>
 <dd>   invent jobs, turn them into job_messages, and push them onto 
    the member variable
    <pre>
       std::stack&ltMessage&gt JOBS_TO_SEND
-</pre>
-<dt> finalize:
+</pre> </dd>
+<dt> finalize: </dt>
 <dd>   read the result_messages off the member variable
 <pre>
        std::stack&ltMessage&gt RECEIVED_RESULTS
        </pre>
-   and extract the results and deal with them as necessary.
-<dt> work:  
+   and extract the results and deal with them as necessary. </dd>
+<dt> work:  </dt>
 <dd> extract the job from job_message,
    do a computation on the job to produce a result,
-   create result_message from the result
+   create result_message from the result </dd>
 </dl>
    
 </p>
