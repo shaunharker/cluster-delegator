@@ -15,8 +15,6 @@
 #include "delegator/Communicator.h"
 #include "delegator/Coordinator_Worker_Scheme.h"
 
-#include <stack>
-
 /***************************************
  *         USER INTERFACE              *
  ***************************************/

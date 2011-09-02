@@ -15,7 +15,7 @@
  *        Coordinator_Worker_Scheme             *
  ************************************************/
 
-Coordinator_Worker_Scheme::Coordinator_Worker_Scheme ( int argc, char * argv [] ) 
+inline Coordinator_Worker_Scheme::Coordinator_Worker_Scheme ( int argc, char * argv [] ) 
 : argc ( argc ), argv ( argv ) {}
 
 /* Coordinator_Worker_Scheme::run() */
