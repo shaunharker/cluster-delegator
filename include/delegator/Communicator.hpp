@@ -20,9 +20,6 @@ inline Communicator::~Communicator ( void ) {
 } /* Communicator::~Communicator */
 
 inline void Communicator::initialize ( void ) {
-  int argc; char * * argv;
-	/* Initialize the MPI communications */
-	MPI_Init(&argc, &argv); 
 	/* Determine identity. */
   int comm_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &comm_rank);
@@ -33,10 +30,7 @@ inline void Communicator::initialize ( void ) {
   ANYSOURCE . channel = MPI_ANY_SOURCE;
 }
 
-inline void Communicator::finalize ( void ) {
-  /* Finalize the MPI communications. */
-	MPI_Finalize();
-}
+inline void Communicator::finalize ( void ) {}
 
 inline void Communicator::send ( const Message & send_me, const Channel & target ) {
 	std::string message = send_me . str ();

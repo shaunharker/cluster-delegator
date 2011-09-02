@@ -17,21 +17,32 @@
 
 namespace delegator {
   
+  void Start ( void ) {
+  	/* Initialize the MPI communications */
+  	int argc; char * * argv;
+		MPI_Init(&argc, &argv); 
+  }
+  
   template < class Process >
-  int Start ( void ) {
+  int Run ( void ) {
     int argc = 0; char * * argv = NULL;
-    return Start < Process > ( argc, argv );
-  } /* Start<> */
+    return Run < Process > ( argc, argv );
+  } /* Run<> */
 
+  void Stop ( void ) {
+  	/* Finalize the MPI communications. */
+		MPI_Finalize();
+  }
+  
   template < class Process >
-  int Start ( int argc, char * argv [] ) {
+  int Run ( int argc, char * argv [] ) {
     typedef Coordinator_Worker_Scheme Scheme;
-    return RunDelegator < Process, Scheme, Communicator > ( argc, argv );
+    return Run < Process, Scheme, Communicator > ( argc, argv );
   } /* Start<> */
 
   // RunDelegator (more advanced interface)
   template < class Process, class Scheme, class Comm >
-  int RunDelegator ( int argc, char * argv [] ) {
+  int Run ( int argc, char * argv [] ) {
     /* Create Process, Scheme, and Communicator */
     Comm my_communicator;
     Scheme my_scheme ( argc, argv );

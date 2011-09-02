@@ -20,23 +20,28 @@
  ***************************************/
 
 namespace delegator {
-  /** Start                                         *
-   * Simple User Interface hard-wired to            *
-   * Coordinator-Worker Scheme and MPI Communicator */
-  template < class Process >
+// Simplest interface: call start, then run, then stop.
+  /** Start */
   int Start ( void );
-
-  /** Start                                         *
-   * Simple User Interface hard-wired to            *
-   * Coordinator-Worker Scheme and MPI Communicator */
+  
+  /** Run */
   template < class Process >
-  int Start ( int argc, char * argv [] );
+  int Run ( void );
 
-  /** Run Delegator                                           *
+  /** Start */
+  int Stop ( void );
+// or, you can call run and pass command line arguments:
+  /** Run */
+  template < class Process >
+  int Run ( int argc, char * argv [] );
+  
+// or, if you develop other schemes and communicators, you could
+// use this final invokation. Otherwise, ignore it:
+  /** Run                                                      *
    *     More advanced interface which can specify different  *
    *     Scheme or Communicator                               */
   template < class Process, class Scheme, class Communicator >
-  int RunDelegator ( int argc, char * argv [] );
+  int Run ( int argc, char * argv [] );
 }
 
 #include "delegator/delegator.hpp"
