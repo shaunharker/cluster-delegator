@@ -22,14 +22,15 @@
 namespace delegator {
 // Simplest interface: call start, then run, then stop.
   /** Start */
-  int Start ( void );
+  void Start ( void );
   
   /** Run */
   template < class Process >
   int Run ( void );
 
-  /** Start */
-  int Stop ( void );
+  /** Stop */
+  void Stop ( void );
+  
 // or, you can call run and pass command line arguments:
   /** Run */
   template < class Process >

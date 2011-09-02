@@ -40,7 +40,7 @@ namespace delegator {
     return Run < Process, Scheme, Communicator > ( argc, argv );
   } /* Start<> */
 
-  // RunDelegator (more advanced interface)
+  // Run (more advanced interface)
   template < class Process, class Scheme, class Comm >
   int Run ( int argc, char * argv [] ) {
     /* Create Process, Scheme, and Communicator */
@@ -53,7 +53,7 @@ namespace delegator {
     my_scheme . run ( & my_process, & my_communicator );
     my_communicator . finalize ();
     return 0; 
-  } /* RunDelegator<> */
+  } /* Run<> */
 }
 
 
