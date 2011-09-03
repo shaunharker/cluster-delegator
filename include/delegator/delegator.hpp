@@ -17,7 +17,7 @@
 
 namespace delegator {
   
-  void Start ( void ) {
+  inline void Start ( void ) {
   	/* Initialize the MPI communications */
   	int argc; char * * argv;
 		MPI_Init(&argc, &argv); 
@@ -29,7 +29,7 @@ namespace delegator {
     return Run < Process > ( argc, argv );
   } /* Run<> */
 
-  void Stop ( void ) {
+  inline void Stop ( void ) {
   	/* Finalize the MPI communications. */
 		MPI_Finalize();
   }
