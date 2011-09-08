@@ -98,5 +98,8 @@ inline void Process::finalize ( void ) {
 
 // main 
 int main ( int argc, char * argv [] ) {
-	return delegator::Start < Process > ( argc, argv );
+	delegator::Start ();
+	delegator::Run < Process > (argc, argv);
+	delegator::Stop ();
+	return 0;
 }
