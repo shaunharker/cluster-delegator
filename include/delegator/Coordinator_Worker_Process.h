@@ -41,13 +41,13 @@ public:
    * Return value is 2 if no job prepared because none available until 
    *              more results are processed.
    */
-  virtual int write ( Message & job_message );
+  virtual int prepare ( Message & job_message );
   
   /** Work the job. */
   virtual void work ( Message & result_message, const Message & job_message ) const;
 
   /** Receive the result of a job. */
-  virtual void read ( const Message & result_message );
+  virtual void accept ( const Message & result_message );
   
   /** Finalize. */
   virtual void finalize ( void );

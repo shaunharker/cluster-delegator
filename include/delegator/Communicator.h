@@ -62,7 +62,11 @@ public:
   /** bool probe ( int tag );                                         **
    *    Checks to see if there is an available message with tag "tag" */
   virtual bool probe ( int tag ); 
- 
+
+  /** void broadcast ( const Message & send_me )                      **
+   *    Checks to see if there is an available message with tag "tag" */
+  virtual void broadcast ( const Message & send_me );
+  
   /** bool coordinating ( void );                       **
    *    Checks to see if this is a "coordinating" node. */
   virtual bool coordinating ( void );

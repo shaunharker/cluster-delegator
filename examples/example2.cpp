@@ -30,9 +30,9 @@ void comment ( void ) {
 class Process : public Coordinator_Worker_Process {
 public:
   void initialize ( void );
-  int write ( Message & job_message );  
+  int prepare ( Message & job_message );  
   void work ( Message & result_message, const Message & job_message ) const;
-  void read ( const Message & result_message );
+  void accept ( const Message & result_message );
   void finalize ( void );
 private:
   int num_jobs_sent;
@@ -58,7 +58,7 @@ inline void Process::initialize ( void ) {
 
 }
 
-inline int Process::write ( Message & job_message ) {
+inline int Process::prepare ( Message & job_message ) {
   // Check if done
   if ( num_jobs_sent == num_jobs ) return 1; //Finish
   // If not done, prepare next job
@@ -82,7 +82,7 @@ void Process::work ( Message & result_message,
   std::cout << "Process::work --> worked job " << job << "\n";
 }
 
-inline void Process::read ( const Message & result_message ) {
+inline void Process::accept ( const Message & result_message ) {
   int job_number;
   std::string result;
   result_message >> job_number;

@@ -64,6 +64,17 @@ inline bool Communicator::probe ( int tag ) {
 	return flag ? true : false;
 } /* Communicator::probe */
 
+inline void Communicator::broadcast ( const Message & send_me ) {
+  std::string message = send_me . str ();
+  int numtasks;
+  MPI_Comm_size(MPI_COMM_WORLD,&numtasks);
+  for ( int i = 1; i < numtasks; ++ i ) {
+    Channel target;
+    target . channel = i;
+    send ( send_me, target );
+  }
+}
+
 inline bool Communicator::coordinating ( void ) {
   if ( SELF . channel == DIRECTOR . channel ) return true;
   return false;
