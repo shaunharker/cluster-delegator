@@ -34,7 +34,7 @@ inline void Coordinator_Worker_Scheme::run_coordinator ( Coordinator_Worker_Proc
   my_process -> initialize ();
   int pending = 0;
   bool retiring = false;  
-	while ( not retiring || pending > 0 ) {
+	while ( not retiring || pending > 0 ) { 
 		/* Receive a message */
     std::cout << "COORD: Receive a message.\n";
     Message incoming;
