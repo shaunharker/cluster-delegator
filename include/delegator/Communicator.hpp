@@ -34,7 +34,7 @@ inline void Communicator::finalize ( void ) {}
 
 inline void Communicator::send ( const Message & send_me, const Channel & target ) {
 	std::string message = send_me . str ();
-  if ( message . size () > buffer_length ) {
+  if ( (size_t) message . size () > (size_t) buffer_length ) {
     std::cout << "cluster-delegator: BUFFER NOT LARGE ENOUGH!\n";
     std::cout << "Trying to send a message of size " << message . size () << "\n";
     abort ();
