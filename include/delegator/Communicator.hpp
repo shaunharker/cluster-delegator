@@ -34,7 +34,12 @@ inline void Communicator::finalize ( void ) {}
 
 inline void Communicator::send ( const Message & send_me, const Channel & target ) {
 	std::string message = send_me . str ();
-	MPI_Send ( const_cast<char *> ( message  . data () ), message . length (), 
+  if ( message . size () > buffer_length ) {
+    std::cout << "cluster-delegator: BUFFER NOT LARGE ENOUGH!\n";
+    std::cout << "Trying to send a message of size " << message . size () << "\n";
+    abort ();
+  }
+	MPI_Send ( const_cast<char *> ( message  . data () ), message . length (),
             MPI_CHAR, target . channel, send_me . tag, MPI_COMM_WORLD );
 } /* Communicator::send */
 

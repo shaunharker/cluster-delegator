@@ -25,7 +25,7 @@ public:
 /** Communicator */
 class Communicator {
 private:
-  static const int buffer_length = 32*1024*1024;
+  static const int buffer_length = 128*1024*1024;
 public:
   Channel SELF;
   Channel DIRECTOR;
