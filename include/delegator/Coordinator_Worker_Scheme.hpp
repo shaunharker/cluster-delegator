@@ -86,9 +86,15 @@ inline void Coordinator_Worker_Scheme::run_worker ( Coordinator_Worker_Process *
   while ( true ) {
     /* Send a READY message. */
     //std::cout << "Worker_Base::run -- send a READY message.\n";
+#ifdef USEIDLEWORKERS
+    if ( my_communicator -> SELF <= NUMBER_OF_WORKERS ) {
+#endif
     Message ready;
     ready . tag = READY;
     my_communicator -> send ( ready, boss );
+#ifdef USEIDLEWORKERS
+    }
+#endif
     /* Receive a job. */
     //std::cout << "Worker_Base::run -- receive a job\n";
     Message job_message;
