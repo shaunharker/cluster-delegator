@@ -16,7 +16,10 @@
 
 //  See http://www.boost.org for updates, documentation, and revision history.
 
-#include <boost/tr1/unordered_set.hpp>
+//// Change made by Shaun Harker on May 9, 2013 for use in Conley-Morse-Database project
+///     + using boost version for portability rather than TR1
+//#include <boost/tr1/unordered_set.hpp>
+#include <boost/unordered_set.hpp>
 
 #include <boost/config.hpp>
 
@@ -79,14 +82,14 @@ template<
 >
 inline void save(
     Archive & ar,
-    const std::tr1::unordered_set<
+    const boost::unordered_set<
         Key, HashFcn, EqualKey, Allocator
     > &t,
     const unsigned int /*file_version*/
 ){
     boost::serialization::stl::save_unordered_collection<
         Archive, 
-        std::tr1::unordered_set<
+        boost::unordered_set<
             Key, HashFcn, EqualKey, Allocator
         > 
     >(ar, t);
@@ -101,19 +104,19 @@ template<
 >
 inline void load(
     Archive & ar,
-    std::tr1::unordered_set<
+    boost::unordered_set<
         Key, HashFcn, EqualKey, Allocator
     > &t,
     const unsigned int /*file_version*/
 ){
     boost::serialization::stl::load_unordered_collection<
         Archive,
-        std::tr1::unordered_set<
+        boost::unordered_set<
             Key, HashFcn, EqualKey, Allocator
         >,
         boost::serialization::stl::archive_input_unordered_set<
             Archive, 
-            std::tr1::unordered_set<
+            boost::unordered_set<
                 Key, HashFcn, EqualKey, Allocator
             >
         >
@@ -131,7 +134,7 @@ template<
 >
 inline void serialize(
     Archive & ar,
-    std::tr1::unordered_set<
+    boost::unordered_set<
         Key, HashFcn, EqualKey, Allocator
     > &t,
     const unsigned int file_version
@@ -149,14 +152,14 @@ template<
 >
 inline void save(
     Archive & ar,
-    const std::tr1::unordered_multiset<
+    const boost::unordered_multiset<
         Key, HashFcn, EqualKey, Allocator
     > &t,
     const unsigned int /*file_version*/
 ){
     boost::serialization::stl::save_unordered_collection<
         Archive, 
-        std::tr1::unordered_multiset<
+        boost::unordered_multiset<
             Key, HashFcn, EqualKey, Allocator
         > 
     >(ar, t);
@@ -171,19 +174,19 @@ template<
 >
 inline void load(
     Archive & ar,
-    std::tr1::unordered_multiset<
+    boost::unordered_multiset<
         Key, HashFcn, EqualKey, Allocator
     > &t,
     const unsigned int /*file_version*/
 ){
     boost::serialization::stl::load_unordered_collection<
         Archive,
-        std::tr1::unordered_multiset<
+        boost::unordered_multiset<
             Key, HashFcn, EqualKey, Allocator
         >,
         boost::serialization::stl::archive_input_unordered_multiset<
             Archive,
-            std::tr1::unordered_multiset<
+            boost::unordered_multiset<
                 Key, HashFcn, EqualKey, Allocator
             > 
         >
@@ -201,7 +204,7 @@ template<
 >
 inline void serialize(
     Archive & ar,
-    std::tr1::unordered_multiset<
+    boost::unordered_multiset<
         Key, HashFcn, EqualKey, Allocator
     > &t,
     const unsigned int file_version
