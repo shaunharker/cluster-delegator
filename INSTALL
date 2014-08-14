@@ -1,0 +1,19 @@
+Installation instructions for cluster-delegator
+-----------------------------------------------
+Type
+
+./install.sh <install-prefix>
+
+If <install-prefix> is omitted then /usr/local is assumed.
+Use "sudo" if there are permission problems or else choose
+an install directory you have permissions to write to.
+
+The software is header only. The only thing the installer does
+is copy header files to 
+
+<install-prefix>/include/delegator
+
+Examples:
+
+./install.sh    #installs to /usr/local
+./install.sh ~/Work  #installs to ~/Work
