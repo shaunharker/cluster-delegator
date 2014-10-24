@@ -22,5 +22,3 @@ if [ ! -d ${PREFIX}/include ]; then
 fi
 echo Copying ./include/delegator to ${PREFIX}/include/delegator
 cp -rfv ./include/delegator/ ${PREFIX}/include/delegator
-echo Copying ./include/boost to ${PREFIX}/include/boost
-cp -rfv ./include/boost/ ${PREFIX}/include/boost
