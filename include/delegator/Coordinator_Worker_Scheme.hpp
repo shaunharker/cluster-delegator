@@ -11,6 +11,10 @@
  *        Coordinator_Worker_Scheme             *
  ************************************************/
 
+#ifndef CD_LOGGING_ON
+#define CD_LOGGING_ON if(0)
+#endif
+ 
 inline Coordinator_Worker_Scheme::Coordinator_Worker_Scheme ( int argc, char * argv [] ) 
 : argc ( argc ), argv ( argv ) {}
 
@@ -30,13 +34,13 @@ inline void Coordinator_Worker_Scheme::run ( Coordinator_Worker_Process * my_pro
 /* Coordinator_Worker_Scheme::run_coordinator() */
 inline void Coordinator_Worker_Scheme::run_coordinator ( Coordinator_Worker_Process * my_process,
                                                          Communicator * my_communicator ) {
-  std::cout << "COORD: Initialize.\n";
+  CD_LOGGING_ON std::cout << "COORD: Initialize.\n";
   my_process -> initialize ();
   int pending = 0;
   bool retiring = false;  
 	while ( not retiring || pending > 0 ) { 
 		/* Receive a message */
-    std::cout << "COORD: Receive a message.\n";
+    CD_LOGGING_ON std::cout << "COORD: Receive a message.\n";
     Message incoming;
     Channel worker;
 		my_communicator -> receive ( &incoming, 
@@ -45,7 +49,7 @@ inline void Coordinator_Worker_Scheme::run_coordinator ( Coordinator_Worker_Proc
                                  my_communicator -> ANYSOURCE );
 		/* Deal with READY. */
 		if ( incoming . tag == READY ) {
-      std::cout << "COORD: Deal with READY.\n";
+      CD_LOGGING_ON std::cout << "COORD: Deal with READY.\n";
       Message job_message;
       /* Prepare a job. (if we cannot, break )*/
       int prepare_status = my_process -> prepare ( job_message );
@@ -61,20 +65,20 @@ inline void Coordinator_Worker_Scheme::run_coordinator ( Coordinator_Worker_Proc
 		
 		/* Deal with a RESULTS message */
 		if ( incoming . tag == RESULTS ) {
-      std::cout << "COORD: Deal with RESULTS.\n";
+      CD_LOGGING_ON std::cout << "COORD: Deal with RESULTS.\n";
       -- pending;
       my_process -> accept ( incoming ); 
     }
   }
   
   // broadcast retire message
-  std::cout << "COORD: Broadcast RETIRE.\n";
+  CD_LOGGING_ON std::cout << "COORD: Broadcast RETIRE.\n";
   Message retire_message;
   my_process -> prepare ( retire_message );
   retire_message . tag = RETIRE;
   my_communicator -> broadcast ( retire_message );
   
-  std::cout << "COORD: Finalize.\n";
+  CD_LOGGING_ON std::cout << "COORD: Finalize.\n";
   my_process -> finalize ();
 }
 
