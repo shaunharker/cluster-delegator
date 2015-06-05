@@ -1,6 +1,15 @@
 Installation instructions for cluster-delegator
 -----------------------------------------------
-Type
+
+== Prerequisites
+
+This package requires Open-MPI and Boost
+
+(For installation of prerequisites on Mac OS X, see below)
+
+== Installation 
+
+From the cluster-delegator directory, type
 
 ./install.sh <install-prefix>
 
@@ -17,3 +26,19 @@ Examples:
 
 ./install.sh    #installs to /usr/local
 ./install.sh ~/Work  #installs to ~/Work
+
+== Obtaining prerequisites on Mac OS X:
+
+# Get home-brew (if you don't already have it)
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+# Get open-mpi
+brew install open-mpi
+
+# Get boost
+brew install boost
+
+# Get cluster-delegator
+git clone https://github.com/shaunharker/cluster-delegator.git
+cd cluster-delegator
+./install.sh
