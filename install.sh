@@ -21,4 +21,7 @@ if [ ! -d ${PREFIX}/include ]; then
     mkdir ${PREFIX}/include
 fi
 echo Copying ./include/delegator to ${PREFIX}/include/delegator
-cp -rfv ./include/delegator/ ${PREFIX}/include/delegator
+if [ ! -d ${PREFIX}/include/delegator ]; then
+    mkdir ${PREFIX}/include/delegator
+fi
+cp -rfv ./include/delegator/* ${PREFIX}/include/delegator
