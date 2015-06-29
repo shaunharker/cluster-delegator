@@ -1,5 +1,5 @@
 #!/bin/bash
-CUR_DIR=`pwd`
+CUR_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 PREFIX=/usr/local
 if [ $# -ge 1 ]; then
     # The user supplied an argument
