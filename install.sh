@@ -1,21 +1,30 @@
 #!/bin/bash
-CUR_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-PREFIX=/usr/local
-if [ $# -ge 1 ]; then
-    # The user supplied an argument
-    PREFIX=${1}
-    # Get absolute path name of install directory
-    mkdir -p "${PREFIX}" 2> /dev/null
-    cd "${PREFIX}" > /dev/null 2>&1
-    if [ $? != 0 ] ; then
-        echo "ERROR: '${PREFIX}' does not exist nor could be created."
-        echo "Please choose another directory."
-        exit 1
-    else
-        PREFIX=`pwd -P`
-    fi
-fi
+for i in "$@"; do case $i in
+    -p=*|--prefix=*) PREFIX="${i#*=}";         shift;;
+    -b=*|--build=*) BUILDTYPE="${i#*=}";       shift;;
+    -s=*|--searchpath=*) SEARCHPATH="${i#*=}"; shift;;
+    -t|--test) TEST="YES";                     shift;;
+    *)               MASS+="${i#*=} ";         shift;;
+esac; done
+absolute() { echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"; }
+if [ ! -z "$PREFIX" ]; then 
+  mkdir -p $PREFIX || ( echo Permission denied && exit 1 ); 
+  PREFIX=$(absolute $PREFIX); 
+elif [ -w /usr/local ]; then 
+  PREFIX=/usr/local; 
+elif [ -d ~/.local ]; then
+  PREFIX=$(absolute ~/.local ); 
+else
+  echo Run with admin privileges or choose a non-system install path with --prefix && exit 1; 
+fi;
+if [ ! -w $PREFIX ]; then echo Permission denied && exit 1; fi
+if [ -z "$BUILDTYPE" ]; then BUILDTYPE=Release; fi
+if [ -z "$SEARCHPATH" ]; then SEARCHPATH=$PREFIX; fi
+if [ -d "$SEARCHPATH" ]; then SEARCHPATH=$(absolute $SEARCHPATH); else exit 1; fi
+
 echo "cluster-delegator will be installed in '${PREFIX}'"
+
+CUR_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cd ${CUR_DIR}
 if [ ! -d ${PREFIX}/include ]; then
     mkdir ${PREFIX}/include

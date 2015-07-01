@@ -11,9 +11,12 @@ This package requires Open-MPI and Boost
 
 From the cluster-delegator directory, type
 
-./install.sh <install-prefix>
+./install.sh --prefix=<install-prefix>
 
 If <install-prefix> is omitted then /usr/local is assumed.
+If /usr/local cannot be written into, then ~/.local is used 
+if it exists. Otherwise the script fails.
+
 Use "sudo" if there are permission problems or else choose
 an install directory you have permissions to write to.
 
@@ -24,8 +27,17 @@ is copy header files to
 
 Examples:
 
-./install.sh    #installs to /usr/local
-./install.sh ~/Work  #installs to ~/Work
+Suppose /usr/local is system-write only:
+
+sudo ./install.sh             # installs to /usr/local
+./install.sh                  # installs to ~/.local (if it exists)
+./install.sh --prefix=~/Work  # installs to ~/Work
+
+On the other hand if /usr/local can be written into without permissions (for instance if you are using Homebrew on Mac OS X this is the case) then
+
+./install.sh 
+
+should install into /usr/local.
 
 == Obtaining prerequisites on Mac OS X:
 
