@@ -5,6 +5,8 @@
 #include <set>
 #include <deque>
 #include <unistd.h>
+#include <exception>
+#include <stdexcept>
 
 /***************************************
  *         USER INTERFACE              *
@@ -15,7 +17,9 @@ namespace delegator {
   inline void Start ( void ) {
   	/* Initialize the MPI communications */
   	int argc = 0; char * * argv = NULL;
-		MPI_Init(&argc, &argv); 
+    int provided;
+    int rc = MPI_Init_thread ( &argc, &argv, MPI_THREAD_MULTIPLE, &provided );
+    if ( rc ) throw std::runtime_error ( "delegator::Start : MPI failed to initialize" );
   }
   
   template < class Process >

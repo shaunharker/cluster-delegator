@@ -11,6 +11,7 @@
 #include <thread>
 #include <unordered_map>
 #include <stack>
+#include <queue>
 #include <utility>
 
 /** Channel. Used by Communicator. */
@@ -56,12 +57,11 @@ public:
   void halt ( void );
 
 private:
-  std::mutex receive_mtx;
-  std::mutex send_mtx;
+  std::mutex mtx;
   std::atomic<bool> daemon_on;
   std::unordered_map<Channel, std::string> incoming;
-  std::stack<std::pair<Channel, Message>> inbox;
-  std::stack<std::pair<Channel, Message>> outbox;
+  std::queue<std::pair<Channel, Message>> inbox;
+  std::queue<std::pair<Channel, Message>> outbox;
 
 };
 
