@@ -1,8 +1,7 @@
-/*
- * Message.hpp
- *  Shaun Harker
- */
- 
+/// Message.hpp
+/// Shaun Harker 
+/// 2011
+
 // Templated Functions
 
 template < class T >

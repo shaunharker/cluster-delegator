@@ -2,7 +2,7 @@
 CC := mpicxx
 CXX := mpicxx
 LDFLAGS := -lboost_serialization
-CXXFLAGS := -O3 -I../include/ 
+CXXFLAGS := -O3 -std=c++11 -I../include/ 
 
 all: example1 example2
 

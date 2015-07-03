@@ -1,11 +1,6 @@
-/*
- *  delegator.hpp
- */
-
-//          Copyright Shaun Harker 2011.
-// Distributed under the Boost Software License, Version 1.0.
-//    (See accompanying file LICENSE_1_0.txt or copy at
-//          http://www.boost.org/LICENSE_1_0.txt)
+/// delegator.hpp
+/// Shaun Harker 
+/// 2011
 
 #include <set>
 #include <deque>
@@ -19,7 +14,7 @@ namespace delegator {
   
   inline void Start ( void ) {
   	/* Initialize the MPI communications */
-  	int argc; char * * argv;
+  	int argc = 0; char * * argv = NULL;
 		MPI_Init(&argc, &argv); 
   }
   
@@ -50,8 +45,13 @@ namespace delegator {
     
     // Run Scheme until it finishes
     my_communicator . initialize ();
-    my_scheme . run ( & my_process, & my_communicator );
+    std::thread t ( &Scheme::run, &my_scheme, &my_process, &my_communicator ); //my_scheme . run ( & my_process, & my_communicator );
+    my_communicator . daemon ();
+    //std::cout << "daemon returned\n";
+    t . join ();
+    //std::cout << "thread joined\n";
     my_communicator . finalize ();
+    //std::cout << "communicator finalized\n";
     return 0; 
   } /* Run<> */
 }

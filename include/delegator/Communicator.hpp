@@ -1,86 +1,180 @@
-/*
- *  Communicator.hpp
- */
-
- //          Copyright Shaun Harker 2011.
- // Distributed under the Boost Software License, Version 1.0.
- //    (See accompanying file LICENSE_1_0.txt or copy at
- //          http://www.boost.org/LICENSE_1_0.txt)
- 
+/// Communicator.hpp
+/// Shaun Harker 
+/// 2011
 
 #include "mpi.h"
 #include <string>
+#include <stdexcept>
+#include <exception>
+#include <string>
+#include <cstdint>
+#include <algorithm>
 
-// Inlined Functions
+#define MAX_MESSAGE_SIZE 1073741824L
 
-inline Communicator::Communicator ( void ) {
-} /* Communicator::Communicator */
-
-inline Communicator::~Communicator ( void ) {
-} /* Communicator::~Communicator */
-
-inline void Communicator::initialize ( void ) {
-	/* Determine identity. */
-  int comm_rank;
-	MPI_Comm_rank(MPI_COMM_WORLD, &comm_rank);
-	/* Initialize member variables. */
-  SELF . channel = comm_rank;
-  DIRECTOR . channel = 0;
-	ANYTAG = MPI_ANY_TAG;
-  ANYSOURCE . channel = MPI_ANY_SOURCE;
+inline void Communicator::
+initialize ( void ) {
+	MPI_Comm_rank(MPI_COMM_WORLD, &SELF);
+  DIRECTOR = 0;
 }
 
-inline void Communicator::finalize ( void ) {}
-
-inline void Communicator::send ( const Message & send_me, const Channel & target ) {
-	std::string message = send_me . str ();
-  if ( (size_t) message . size () > (size_t) buffer_length ) {
-    std::cout << "cluster-delegator: BUFFER NOT LARGE ENOUGH!\n";
-    std::cout << "Trying to send a message of size " << message . size () << "\n";
-    abort ();
-  }
-	MPI_Send ( const_cast<char *> ( message  . data () ), message . length (),
-            MPI_CHAR, target . channel, send_me . tag, MPI_COMM_WORLD );
-} /* Communicator::send */
-
-inline void Communicator::receive ( Message * receive_me, 
-                                    Channel * sender, int tag, const Channel & source ) {
-  /* Receive the message */
-	MPI_Status status;
-  char * buffer = new char [ buffer_length ];
-	MPI_Recv ( buffer, buffer_length, MPI_CHAR, source . channel, tag, MPI_COMM_WORLD, &status );
-	/* Get the length of the message */
-	int count;
-	MPI_Get_count ( &status, MPI_CHAR, &count );
-	/* Produce a string holding the message */
-	std::string message ( buffer, count );
-	/* Copy the message into the Message structure */
-	receive_me -> str ( message );
-	receive_me -> tag = status . MPI_TAG;
-  /* Identify the source of the message */
-	sender -> channel = status . MPI_SOURCE;
-  delete [] buffer;
-} /* Communicator::receive */
-
-inline bool Communicator::probe ( int tag ) {
-	int flag; 
-	MPI_Status status;
-	MPI_Iprobe ( MPI_ANY_SOURCE, tag, MPI_COMM_WORLD, &flag, &status );
-	return flag ? true : false;
-} /* Communicator::probe */
-
-inline void Communicator::broadcast ( const Message & send_me ) {
-  std::string message = send_me . str ();
+inline void Communicator::
+finalize ( void ) {
+  // Shut-down message
   int numtasks;
   MPI_Comm_size(MPI_COMM_WORLD,&numtasks);
-  for ( int i = 1; i < numtasks; ++ i ) {
-    Channel target;
-    target . channel = i;
-    send ( send_me, target );
+  int RETIRE = 0;
+  for ( Channel channel = 1; channel < numtasks; ++ channel ) {
+    MPI_Send ( NULL,0,MPI_CHAR,channel,RETIRE,MPI_COMM_WORLD );  
   }
 }
 
-inline bool Communicator::coordinating ( void ) {
-  if ( SELF . channel == DIRECTOR . channel ) return true;
-  return false;
+inline void Communicator::
+daemon ( void ) {
+  //std::cout << "Communicator::daemon started\n";
+  daemon_on . store ( true );
+  while ( 1 ) {
+    if ( not daemon_on . load () ) return;
+
+    // Determine action
+    int action = 0; // sleep (default)
+    // Check if there is a message to receive
+    MPI_Status status;
+    int flag = 0;
+    MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status);
+    if ( flag ) action = 1; // receive
+
+    //if ( flag ) std::cout << "RECEIVE FLAG!";
+    // Check if there is a message to send
+    send_mtx . lock ();
+    if ( not outbox . empty () ) action = 2; // send (overrides receive)
+    send_mtx . unlock ();
+
+    //if ( action > 0 ) std::cout << "ACTION = " << action << "\n";
+    // Dispatch on chosen action
+    switch ( action ) {
+      case 0: // sleep
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        break;
+      case 1: // receive
+      {
+        //std::cout << "Communicator::daemon receive\n";
+
+        /* Get the length of the message */
+        int buffer_length;
+        int error_code = MPI_Get_count(&status, MPI_CHAR, &buffer_length);
+        if ( error_code != 0 ) throw std::runtime_error("Communicator::receive Problem with message size");
+        int tag = status . MPI_TAG;
+        Channel channel = status . MPI_SOURCE;  
+        receive_mtx . lock ();
+        std::string & text = incoming [ channel ];
+        if ( buffer_length == 0 ) { 
+          /* Edge case: message is integer multiple of GB size */
+          MPI_Recv ( NULL, 0, MPI_CHAR, channel, tag, MPI_COMM_WORLD, &status );
+          Message message;
+          message . str ( text );
+          message . tag = tag;
+          inbox . push ( std::make_pair ( channel, message ) );
+          text . clear ();
+        } else {
+          /* Allocate space for the message */
+          uint64_t N = text . size ();
+          text . resize ( N + (uint64_t) buffer_length );
+          char * buffer = &text[N];
+          /* Receive the message */
+          MPI_Recv ( buffer, buffer_length, MPI_CHAR, channel, tag, MPI_COMM_WORLD, &status );
+        }
+        if ( buffer_length < MAX_MESSAGE_SIZE ) { 
+          Message message;
+          message . str ( text );
+          message . tag = tag;
+          inbox . push ( std::make_pair ( channel, message ) );
+          text . clear ();
+        }
+        receive_mtx . unlock ();
+        //std::cout << "Communicator::daemon receive complete\n";
+        break;
+      }
+      case 2: // send message
+      {
+        //std::cout << "Communicator::daemon send begin\n";
+        // Retrieve the message
+        send_mtx . lock ();
+        std::pair<Channel, Message> pair = outbox . top ();
+        outbox . pop ();
+        send_mtx . unlock ();
+        Channel channel = pair . first;
+        std::string text = pair . second . str ();
+        int tag = pair . second . tag;
+        uint64_t begin = 0;
+        uint64_t N = text . size ();
+        bool edge_case = false;
+        if ( N == 0 ) edge_case = true;
+        while ( N > 0 ) {
+          int submessage_length = std::min ( (uint64_t) MAX_MESSAGE_SIZE, N );
+          MPI_Send ( const_cast<char *> ( text . data () + begin ), 
+                     submessage_length,
+                     MPI_CHAR, 
+                     channel, 
+                     tag, 
+                     MPI_COMM_WORLD );
+          begin += submessage_length;
+          N -= submessage_length;
+          if ( submessage_length == MAX_MESSAGE_SIZE && N == 0 ) { 
+            edge_case = true; // Message is integer GB in length
+          }
+        }
+        /* Edge case must send addition zero-length message */
+        if ( edge_case ) {   
+          MPI_Send ( NULL,
+                     0,
+                     MPI_CHAR, 
+                     channel, 
+                     tag, 
+                     MPI_COMM_WORLD ); 
+        }
+        //std::cout << "Communicator::daemon send complete\n";
+        break;
+      }
+    }
+  }
+  //std::cout << "daemon exit!\n";
 }
+
+inline void Communicator::
+send ( const Message & message, 
+       const Channel & channel ) {
+  send_mtx . lock ();
+  outbox . push ( std::make_pair ( channel, message ) );
+  send_mtx . unlock ();
+}
+
+inline void Communicator::
+receive ( Message * message, 
+          Channel * channel ) {
+  while ( 1 ) {
+    receive_mtx . lock ();
+    if ( inbox . empty () ) { 
+      receive_mtx . unlock ();
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      continue;
+    }
+    std::pair<Channel, Message> pair = inbox . top ();
+    inbox . pop ();
+    receive_mtx . unlock ();
+    *channel = pair . first;
+    *message = pair . second;
+    return;
+  }
+} 
+
+inline bool Communicator::
+coordinating ( void ) {
+  return ( SELF == DIRECTOR );
+}
+
+inline void Communicator:: 
+halt ( void ) {
+  daemon_on . store ( false );
+}
+
