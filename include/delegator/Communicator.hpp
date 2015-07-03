@@ -44,7 +44,7 @@ daemon ( void ) {
     MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status);
     if ( flag ) action = 1; // receive
 
-    //if ( flag ) std::cout << "RECEIVE FLAG!";
+    if ( flag ) std::cout << "Communicator::daemon (" << SELF << ") receive flag\n";
     // Check if there is a message to send
     send_mtx . lock ();
     if ( not outbox . empty () ) action = 2; // send (overrides receive)
@@ -58,7 +58,7 @@ daemon ( void ) {
         break;
       case 1: // receive
       {
-        //std::cout << "Communicator::daemon receive\n";
+        std::cout << "Communicator::daemon (" << SELF << ") receive begin\n";
 
         /* Get the length of the message */
         int buffer_length;
@@ -71,11 +71,6 @@ daemon ( void ) {
         if ( buffer_length == 0 ) { 
           /* Edge case: message is integer multiple of GB size */
           MPI_Recv ( NULL, 0, MPI_CHAR, channel, tag, MPI_COMM_WORLD, &status );
-          Message message;
-          message . str ( text );
-          message . tag = tag;
-          inbox . push ( std::make_pair ( channel, message ) );
-          text . clear ();
         } else {
           /* Allocate space for the message */
           uint64_t N = text . size ();
@@ -92,7 +87,7 @@ daemon ( void ) {
           text . clear ();
         }
         receive_mtx . unlock ();
-        //std::cout << "Communicator::daemon receive complete\n";
+        std::cout << "Communicator::daemon (" << SELF << ") receive complete\n";
         break;
       }
       case 2: // send message
@@ -159,6 +154,7 @@ receive ( Message * message,
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
       continue;
     }
+    std::cout << "Communicator::receive (" << SELF << ") Inbox non-empty (" << inbox.size() << " messages)\n";
     std::pair<Channel, Message> pair = inbox . top ();
     inbox . pop ();
     receive_mtx . unlock ();

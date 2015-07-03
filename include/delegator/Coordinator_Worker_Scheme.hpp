@@ -6,6 +6,8 @@
 #include <chrono>
 #include <mutex>
 
+#define CD_LOG(X) mtx.lock(); std::cout << X ; mtx.unlock();
+
 /************************************************
  *        Coordinator_Worker_Scheme             *
  ************************************************/
@@ -46,11 +48,11 @@ coordinator_incoming ( void ) {
     if ( not expecting_more_results ) { 
       mtx . lock ();
       done = true;
-      mtx . unlock ();
       std::cout << "coordinator_incoming exit criteria:\n";
       std::cout << (out_of_jobs ? "out_of_jobs" : "not_out_of_jobs" ) << "\n";
       std::cout << prepared.size () << " == 0\n";
       std::cout << received << " == " << sent << "\n";
+      mtx . unlock ();
       break;
     }
     // Receive one of the expected results
@@ -61,15 +63,19 @@ coordinator_incoming ( void ) {
 
     // Not actually a result, just a ready worker.
     if ( incoming . tag == READY ) { 
+      CD_LOG("RECEIVED ~READY~ FROM WORKER " << worker << "\n")
+
       mtx . lock ();
       ready . push ( worker );
       mtx . unlock ();
     }
     // Accept the result
     if ( incoming . tag == RESULTS ) { 
-      my_process -> accept ( incoming );
+      CD_LOG("RECEIVED RESULTS FROM WORKER " << worker << "\n")
+
       // Record receipt
       mtx . lock ();
+      my_process -> accept ( incoming );
       ++ received;
       mtx . unlock ();
     }
@@ -102,6 +108,7 @@ coordinator_outgoing ( void ) {
     mtx . unlock ();
     // Send the job to the worker
     my_communicator -> send ( job, worker );
+    CD_LOG("SENT JOB TO WORKER  " << worker << "\n")
   }
 }
 
@@ -120,7 +127,9 @@ coordinator_preparing ( void ) {
     }
     // Prepare the job
     Message job;
+    mtx . lock ();
     int prepare_status = my_process -> prepare ( job );
+    mtx . unlock ();
     switch ( prepare_status ) {
       case 0: // Job prepared
         //std::cout << "coordinator_preparing job prepared\n";
@@ -169,10 +178,12 @@ run_worker ( void) {
     Message ready;
     ready . tag = READY;
     my_communicator -> send ( ready, boss );
+    CD_LOG(" WORKER: SENT ~READY~ TO COORD\n")
 
     /* Receive a job. */
     Message job_message;
 		my_communicator -> receive ( &job_message, &boss );
+    CD_LOG(" WORKER: RECEIVED JOB\n")
     /* Quit if it is a retire job. */
     if ( job_message . tag == RETIRE ) {
       break;
@@ -182,8 +193,11 @@ run_worker ( void) {
     Message result_message;
     my_process -> work ( result_message, job_message );
 		result_message . tag = RESULTS;
+    CD_LOG(" WORKER: JOB WORKED, RESULTS OBTAINED\n")
 
     /* Send the results back to the coordinator. */
     my_communicator -> send ( result_message, boss );
+    CD_LOG(" WORKER: SENT RESULTS TO COORD\n")
+
   }
 }
