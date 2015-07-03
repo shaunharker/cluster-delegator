@@ -47,6 +47,10 @@ coordinator_incoming ( void ) {
       mtx . lock ();
       done = true;
       mtx . unlock ();
+      std::cout << "coordinator_incoming exit criteria:\n";
+      std::cout << (out_of_jobs ? "out_of_jobs" : "not_out_of_jobs" ) << "\n";
+      std::cout << prepared.size () << " == 0\n";
+      std::cout << received << " == " << sent << "\n";
       break;
     }
     // Receive one of the expected results
@@ -54,9 +58,7 @@ coordinator_incoming ( void ) {
     Channel worker;
     my_communicator -> receive ( &incoming, 
                                  &worker );
-    mtx . lock ();
-    ++ received;
-    mtx . unlock ();
+
     // Not actually a result, just a ready worker.
     if ( incoming . tag == READY ) { 
       mtx . lock ();
@@ -66,7 +68,12 @@ coordinator_incoming ( void ) {
     // Accept the result
     if ( incoming . tag == RESULTS ) { 
       my_process -> accept ( incoming );
+      // Record receipt
+      mtx . lock ();
+      ++ received;
+      mtx . unlock ();
     }
+
   }
 }
 
