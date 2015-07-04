@@ -28,7 +28,7 @@ install:
   - ./.install/boost.sh serialization
 script: 
   - cd examples
-  - ../.install/build.sh --prefix=../ --build=Debug --test
+  - ../.install/build.sh --build=Debug --test
   - cd ..
   - ./install.sh
 after_success: 

@@ -44,6 +44,7 @@ find_package(MPI REQUIRED)
 
 include_directories ( 
   ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_SOURCE_DIR}/../include
   /usr/local/include 
   /opt/local/include 
   ${MPI_INCLUDE_PATH}
