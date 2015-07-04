@@ -1,26 +1,16 @@
 #!/bin/bash
-for i in "$@"; do case $i in
-    -p=*|--prefix=*) PREFIX="${i#*=}";         shift;;
-    -b=*|--build=*) BUILDTYPE="${i#*=}";       shift;;
-    -s=*|--searchpath=*) SEARCHPATH="${i#*=}"; shift;;
-    -t|--test) TEST="YES";                     shift;;
-    *)               MASS+="${i#*=} ";         shift;;
-esac; done
-absolute() { echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"; }
-if [ ! -z "$PREFIX" ]; then 
-  mkdir -p $PREFIX || ( echo Permission denied && exit 1 ); 
-  PREFIX=$(absolute $PREFIX); 
-elif [ -w /usr/local ]; then 
-  PREFIX=/usr/local; 
-elif [ -d ~/.local ]; then
-  PREFIX=$(absolute ~/.local ); 
-else
-  echo Run with admin privileges or choose a non-system install path with --prefix && exit 1; 
-fi;
-if [ ! -w $PREFIX ]; then echo Permission denied && exit 1; fi
-if [ -z "$BUILDTYPE" ]; then BUILDTYPE=Release; fi
-if [ -z "$SEARCHPATH" ]; then SEARCHPATH=$PREFIX; fi
-if [ -d "$SEARCHPATH" ]; then SEARCHPATH=$(absolute $SEARCHPATH); else exit 1; fi
+#  Usage: install.sh [--prefix=INSTALLATION_PREFIX]
+#  Effects: Copies header files into INSTALLATION_PREFIX/include
+#           If no prefix is provided, it chooses 
+#            /usr/local 
+#            unless it cannot write there, in which case it chooses
+#            ~/.local 
+#            unless it does not exist, in which case it fails.
+
+## Parse command line arguments to get
+#  PREFIX, SEARCHPATH, BUILDTYPE, TESTS, and MASS
+SHELL_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+source $SHELL_DIR/.install/parse.sh
 
 echo "cluster-delegator will be installed in '${PREFIX}'"
 
