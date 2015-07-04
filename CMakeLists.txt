@@ -56,6 +56,7 @@ include_directories (
 #######################
 
 link_directories ( 
+  ${CMAKE_SOURCE_DIR}/lib
   ${USER_LIBRARY_PATH} 
   /usr/local/lib 
   /opt/local/lib )
