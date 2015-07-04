@@ -9,17 +9,20 @@
 
 ## Parse command line arguments to get
 #  PREFIX, SEARCHPATH, BUILDTYPE, TESTS, and MASS
-SHELL_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source $SHELL_DIR/.install/parse.sh
-
-echo "cluster-delegator will be installed in '${PREFIX}'"
-
-CUR_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-cd ${CUR_DIR}
+SRC_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+source $SRC_DIR/.install/parse.sh
 
 ## Install amalgamated header file
 ## For use with #include <cluster-delegator.hpp>
-./.install/amalgamate.py
+cd ${SRC_DIR}
+./.install/amalgamate.sh
 mkdir -p ${PREFIX}/include/delegator
 cp ./dist/cluster-delegator.hpp ${PREFIX}/include/cluster-delegator.hpp
 cp ./dist/cluster-delegator.hpp ${PREFIX}/include/delegator/delegator.h
+
+## Tell the user about it
+echo "cluster-delegator has been installed in '${PREFIX}'"
+echo " --> ${PREFIX}/include/cluster-delegator.hpp "
+echo " --> ${PREFIX}/include/delegator/delegator.h "
+echo " (These files are the same; the latter is for"
+echo "  backwards compatibility.)"
