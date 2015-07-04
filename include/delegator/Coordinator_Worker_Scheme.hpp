@@ -6,6 +6,10 @@
 #include <chrono>
 #include <mutex>
 
+#ifndef SLEEP_TIME
+#define SLEEP_TIME std::chrono::microseconds(10)
+#endif
+
 #ifndef CD_LOG
 #define CD_LOG(X) mtx.lock(); std::cout << X ; mtx.unlock();
 #endif
@@ -96,7 +100,7 @@ coordinator_outgoing ( void ) {
     mtx . unlock ();
     // If there isn't, sleep for 1ms to avoid contention on the lock
     if ( not job_and_worker_ready ) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      std::this_thread::sleep_for(SLEEP_TIME);
       continue;
     }
     //std::cout << "coordinator outgoing send\n";
@@ -124,7 +128,7 @@ coordinator_preparing ( void ) {
     mtx . unlock ();
     // If no need to prepare jobs, sleep for 1ms to avoid contention on the lock
     if ( not need_to_prepare_more_jobs ) { 
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      std::this_thread::sleep_for(SLEEP_TIME);
       continue;
     }
     // Prepare the job
@@ -148,7 +152,7 @@ coordinator_preparing ( void ) {
         break;
       case 2: // Jobs remain, but not yet available
         //std::cout << "coordinator_preparing sleep\n";
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::this_thread::sleep_for(SLEEP_TIME);
         break;
     }
   }

@@ -13,6 +13,10 @@
 #define MAX_MESSAGE_SIZE 1073741824L
 #define DEBUG if(0)
 
+#ifndef SLEEP_TIME
+#define SLEEP_TIME std::chrono::microseconds(10)
+#endif
+
 #ifndef TICKTIME
 #define TICKTIME ((double)(std::chrono::system_clock::now().time_since_epoch().count()%1000000000LL))/1000000.0
 #endif
@@ -67,7 +71,7 @@ daemon ( void ) {
         std::cout << TICKTIME << " : Communicator::daemon (" << SELF << ") Sleep begin\n";
         mtx . unlock ();
 #endif
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::this_thread::sleep_for(SLEEP_TIME);
 #ifdef CD_COMM_LOGGING
         mtx . lock ();
         std::cout << TICKTIME << " : Communicator::daemon (" << SELF << ") Sleep end\n";
@@ -208,7 +212,7 @@ receive ( Message * message,
     mtx . lock ();
     if ( inbox . empty () ) { 
       mtx . unlock ();
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      std::this_thread::sleep_for(SLEEP_TIME);
       continue;
     }
     std::pair<Channel, Message> pair = inbox . front ();
