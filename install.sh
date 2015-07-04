@@ -17,8 +17,8 @@ source $SRC_DIR/.install/parse.sh
 cd ${SRC_DIR}
 ./.install/amalgamate.sh
 mkdir -p ${PREFIX}/include/delegator
-cp ./dist/cluster-delegator.hpp ${PREFIX}/include/cluster-delegator.hpp
-cp ./dist/cluster-delegator.hpp ${PREFIX}/include/delegator/delegator.h
+cp ./dist/include/cluster-delegator.hpp ${PREFIX}/include/cluster-delegator.hpp
+cp ./dist/include/cluster-delegator.hpp ${PREFIX}/include/delegator/delegator.h
 
 ## Tell the user about it
 echo "cluster-delegator has been installed in '${PREFIX}'"

@@ -15,6 +15,10 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
+ 
+// Lower max message size to test if it will split them up
+#define CD_MAX_MESSAGE_SIZE 1024
 #include "delegator/delegator.h"
 
 void comment ( void ) {
@@ -61,6 +65,7 @@ inline void Process::initialize ( void ) {
 inline int Process::prepare ( Message & job_message ) {
   // Check if done
   if ( num_jobs_sent == num_jobs ) return 1; //Finish
+  if ( rand () % 2 ) return 2; // make sure 2 option works
   // If not done, prepare next job
   int job_number = num_jobs_sent;
   job_message << job_number;
@@ -79,6 +84,9 @@ void Process::work ( Message & result_message,
   // Push results into "results" message
   result_message << job;
   result_message << result;
+  std::vector<int> garbage;
+  garbage . resize ( 1000000 );
+  result_message << garbage;
   std::cout << "Process::work --> worked job " << job << "\n";
 }
 

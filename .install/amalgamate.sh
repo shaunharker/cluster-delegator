@@ -2,8 +2,8 @@
 
 SHELL_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cd $SHELL_DIR/..
-mkdir -p dist
-OUTFILE=./dist/cluster-delegator.hpp
+mkdir -p dist/include
+OUTFILE=./dist/include/cluster-delegator.hpp
 
 echo '/// cluster-delegator amalgated header' > $OUTFILE
 echo '/*' >> $OUTFILE
