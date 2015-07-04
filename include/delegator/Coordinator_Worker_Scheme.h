@@ -2,20 +2,17 @@
 /// Shaun Harker 
 /// 2011
 
-#ifndef SRH_COORDINATOR_WORKER_SCHEME_H
-#define SRH_COORDINATOR_WORKER_SCHEME_H
+#ifndef CLUSTER_DELEGATOR_COORDINATOR_WORKER_SCHEME_H
+#define CLUSTER_DELEGATOR_COORDINATOR_WORKER_SCHEME_H
 
 #include "delegator/Message.h"
 #include "delegator/Communicator.h"
 #include "delegator/Coordinator_Worker_Process.h"
-
 #include <mutex>
+#include <cstdint>
+#include <queue>
 
-/************************************************
- *        Coordinator_Worker_Scheme             *
- ************************************************/
-
-/** Coordinator_Worker_Scheme */
+/// Coordinator_Worker_Scheme
 class Coordinator_Worker_Scheme {
 public:
   Coordinator_Worker_Scheme ( int argc, char * argv [] );
@@ -38,8 +35,8 @@ private:
   bool done;
   uint64_t received;
   uint64_t sent;
-  std::stack<Message> prepared;
-  std::stack<Channel> ready;
+  std::queue<Message> prepared;
+  std::queue<Channel> ready;
   std::mutex mtx;
 };
 

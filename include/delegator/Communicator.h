@@ -2,22 +2,21 @@
 /// Shaun Harker 
 /// 2011
 
-#ifndef _CMDP_COMMUNICATOR_
-#define _CMDP_COMMUNICATOR_
+#ifndef CLUSTER_DELEGATOR_COMMUNICATOR_H
+#define CLUSTER_DELEGATOR_COMMUNICATOR_H
 
 #include "delegator/Message.h"
 #include <mutex>
 #include <atomic>
-#include <thread>
 #include <unordered_map>
-#include <stack>
 #include <queue>
 #include <utility>
 
-/** Channel. Used by Communicator. */
+/// Channel. Used by Communicator.
 typedef int Channel;
 
-/** Communicator */
+/// Communicator
+///   A class to handle interprocess communication through MPI
 class Communicator {
 public:
   Channel SELF;
@@ -25,35 +24,34 @@ public:
   Channel ANYSOURCE;
   int ANYTAG;
   
-  /** daemon
-        call on main thread. Run-loop which handles MPI. */
+  /// daemon
+  ///   call on main thread. Run-loop which handles MPI.
   void daemon ( void );
 
-  /** initialize ( void );
-   - Responsible for initializing communications. 
-   - Responsible for setting the values of DIRECTOR, SELF, ANYSOURCE, ANYTAG. */
+  /// initialize
+  ///   - Responsible for initializing communications.
+  ///   - Responsible for setting the values of DIRECTOR, SELF, ANYSOURCE, ANYTAG.
   void initialize ( void );
   
-  /** finalize ( void ).
-   *      - Responsible for finalizing communications. */ 
+  /// finalize
+  ///   - Responsible for finalizing communications. 
   void finalize ( void );
   
-  /** send ( const Message & send_me, const Channel & target ). **
-   *    sends the contents of send_me to "target"               */
+  /// send
+  ///   sends the contents of send_me to "target"               
   void send ( const Message & send_me, const Channel & target );
  
-  /** void receive ( Message * receive_me, Channel * sender ).
-   *   Receives a message and stores it in "receive_me".
-   *   Identity of sender is stored in "sender"
-   */
+  /// receive
+  ///   Receives a message and stores it in "receive_me".
+  ///   Identity of sender is stored in "sender"
   void receive ( Message * receive_me, Channel * sender ); 
  
-  /** bool coordinating ( void );                       **
-   *    Checks to see if this is a "coordinating" node. */
+  /// coordinating ( void );
+  ///   Checks to see if this is a "coordinating" node.
   bool coordinating ( void );
 
-  /** halt
-   *   Stop daemon */
+  /// halt
+  ///   Stop daemon
   void halt ( void );
 
 private:
@@ -62,7 +60,6 @@ private:
   std::unordered_map<Channel, std::string> incoming;
   std::queue<std::pair<Channel, Message>> inbox;
   std::queue<std::pair<Channel, Message>> outbox;
-
 };
 
 #include "delegator/Communicator.hpp"

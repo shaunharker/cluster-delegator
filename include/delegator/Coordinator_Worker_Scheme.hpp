@@ -6,26 +6,21 @@
 #include <chrono>
 #include <mutex>
 
-#ifndef SLEEP_TIME
-#define SLEEP_TIME std::chrono::microseconds(10)
+#ifndef CD_SLEEP_TIME
+#define CD_SLEEP_TIME std::chrono::microseconds(10)
 #endif
 
 #ifndef CD_LOG
 #define CD_LOG(X) mtx.lock(); std::cout << X ; mtx.unlock();
 #endif
 
-#ifndef TICKTIME
-#define TICKTIME ((double)(std::chrono::system_clock::now().time_since_epoch().count()%1000000000LL))/1000000.0
+#ifndef CD_TICKTIME
+#define CD_TICKTIME ((double)(std::chrono::system_clock::now().time_since_epoch().count()%1000000000LL))/1000000.0
 #endif
-
-/************************************************
- *        Coordinator_Worker_Scheme             *
- ************************************************/
 
 inline Coordinator_Worker_Scheme::
 Coordinator_Worker_Scheme ( int argc, char * argv [] ) 
-: argc ( argc ), argv ( argv ), received(0), sent(0) {
-}
+: argc ( argc ), argv ( argv ), received(0), sent(0) {}
 
 /* Coordinator_Worker_Scheme::run() */
 inline void Coordinator_Worker_Scheme::
@@ -46,7 +41,6 @@ run ( Coordinator_Worker_Process * process,
 
 inline void Coordinator_Worker_Scheme::
 coordinator_incoming ( void ) {
-  //std::cout << "coordinator incoming\n";
   while ( not done ) { 
     // Check if expecting more results
     mtx . lock ();
@@ -66,19 +60,14 @@ coordinator_incoming ( void ) {
     Channel worker;
     my_communicator -> receive ( &incoming, 
                                  &worker );
-
     // Not actually a result, just a ready worker.
     if ( incoming . tag == READY ) { 
-      //CD_LOG( TICKTIME << " : RECEIVED ~READY~ FROM WORKER " << worker << "\n")
-
       mtx . lock ();
       ready . push ( worker );
       mtx . unlock ();
     }
     // Accept the result
     if ( incoming . tag == RESULTS ) { 
-      //CD_LOG( TICKTIME << " : RECEIVED RESULTS FROM WORKER " << worker << "\n")
-
       // Record receipt
       mtx . lock ();
       my_process -> accept ( incoming );
@@ -91,36 +80,31 @@ coordinator_incoming ( void ) {
 
 inline void Coordinator_Worker_Scheme::
 coordinator_outgoing ( void ) {
-  //std::cout << "coordinator outgoing\n";
   while ( not done ) {
     // Check if there is a worker available and a job ready.
     mtx . lock ();
     bool job_and_worker_ready = ( ready . size () > 0 && prepared . size () > 0 );
-    //std::cout << ready.size () << " " << prepared.size () << "?\n";
     mtx . unlock ();
     // If there isn't, sleep for 1ms to avoid contention on the lock
     if ( not job_and_worker_ready ) {
-      std::this_thread::sleep_for(SLEEP_TIME);
+      std::this_thread::sleep_for(CD_SLEEP_TIME);
       continue;
     }
-    //std::cout << "coordinator outgoing send\n";
     // Obtain the identity of the available worker and the job message
     mtx . lock ();
-    Message job = prepared . top ();
-    Channel worker = ready . top ();
+    Message job = prepared . front ();
+    Channel worker = ready . front ();
     prepared . pop ();
     ready . pop ();
     ++ sent;
     mtx . unlock ();
     // Send the job to the worker
     my_communicator -> send ( job, worker );
-    //CD_LOG( TICKTIME << " : SENT JOB TO WORKER  " << worker << "\n")
   }
 }
 
 inline void Coordinator_Worker_Scheme::
 coordinator_preparing ( void ) {
-  //std::cout << "coordinator preparing\n";
   while ( not out_of_jobs ) {
     // See if there is a need to prepare more jobs (i.e. too few ready)
     mtx . lock ();
@@ -128,7 +112,7 @@ coordinator_preparing ( void ) {
     mtx . unlock ();
     // If no need to prepare jobs, sleep for 1ms to avoid contention on the lock
     if ( not need_to_prepare_more_jobs ) { 
-      std::this_thread::sleep_for(SLEEP_TIME);
+      std::this_thread::sleep_for(CD_SLEEP_TIME);
       continue;
     }
     // Prepare the job
@@ -139,20 +123,17 @@ coordinator_preparing ( void ) {
     mtx . unlock ();
     switch ( prepare_status ) {
       case 0: // Job prepared
-        //std::cout << "coordinator_preparing job prepared\n";
         mtx . lock ();
         prepared . push ( job );
         mtx . unlock ();
         break;
       case 1: // No jobs remain
-        //std::cout << "coordinator_preparing no jobs remain\n";
         mtx . lock ();
         out_of_jobs = true;
         mtx . unlock ();
         break;
       case 2: // Jobs remain, but not yet available
-        //std::cout << "coordinator_preparing sleep\n";
-        std::this_thread::sleep_for(SLEEP_TIME);
+        std::this_thread::sleep_for(CD_SLEEP_TIME);
         break;
     }
   }
@@ -175,36 +156,26 @@ run_coordinator ( void ) {
   my_process -> finalize ();
 }
 
-
-/* Coordinator_Worker_Process::run_worker() */
 inline void Coordinator_Worker_Scheme::
 run_worker ( void) {
   Channel boss = my_communicator -> DIRECTOR;
   while ( true ) {
-    /* Send a READY message. */
+    // Send a READY message.
     Message ready;
     ready . tag = READY;
     my_communicator -> send ( ready, boss );
-    //CD_LOG( TICKTIME << " :  WORKER: SENT ~READY~ TO COORD\n")
-
-    /* Receive a job. */
+    // Receive a job.
     Message job_message;
 		my_communicator -> receive ( &job_message, &boss );
-    //CD_LOG( TICKTIME << " :  WORKER: RECEIVED JOB\n")
     /* Quit if it is a retire job. */
     if ( job_message . tag == RETIRE ) {
       break;
     }
-
-    /* Work the job. */
+    // Work the job.
     Message result_message;
     my_process -> work ( result_message, job_message );
 		result_message . tag = RESULTS;
-    //CD_LOG( TICKTIME << " :  WORKER: JOB WORKED, RESULTS OBTAINED\n")
-
-    /* Send the results back to the coordinator. */
+    // Send the results back to the coordinator.
     my_communicator -> send ( result_message, boss );
-    //CD_LOG( TICKTIME << " :  WORKER: SENT RESULTS TO COORD\n")
-
   }
 }
