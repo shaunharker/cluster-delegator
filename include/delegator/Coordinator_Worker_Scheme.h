@@ -5,9 +5,11 @@
 #ifndef CLUSTER_DELEGATOR_COORDINATOR_WORKER_SCHEME_H
 #define CLUSTER_DELEGATOR_COORDINATOR_WORKER_SCHEME_H
 
+#ifndef CLUSTER_DELEGATOR_IS_AMALGAMATION
 #include "delegator/Message.h"
 #include "delegator/Communicator.h"
 #include "delegator/Coordinator_Worker_Process.h"
+#endif
 #include <mutex>
 #include <cstdint>
 #include <queue>
@@ -39,7 +41,5 @@ private:
   std::queue<Channel> ready;
   std::mutex mtx;
 };
-
-#include "delegator/Coordinator_Worker_Scheme.hpp"
 
 #endif

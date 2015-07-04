@@ -16,11 +16,10 @@ echo "cluster-delegator will be installed in '${PREFIX}'"
 
 CUR_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cd ${CUR_DIR}
-if [ ! -d ${PREFIX}/include ]; then
-    mkdir ${PREFIX}/include
-fi
-echo Copying ./include/delegator to ${PREFIX}/include/delegator
-if [ ! -d ${PREFIX}/include/delegator ]; then
-    mkdir ${PREFIX}/include/delegator
-fi
-cp -rfv ./include/delegator/* ${PREFIX}/include/delegator
+
+## Install amalgamated header file
+## For use with #include <cluster-delegator.hpp>
+./.install/amalgamate.py
+mkdir -p ${PREFIX}/include/delegator
+cp ./dist/cluster-delegator.hpp ${PREFIX}/include/cluster-delegator.hpp
+cp ./dist/cluster-delegator.hpp ${PREFIX}/include/delegator/delegator.h

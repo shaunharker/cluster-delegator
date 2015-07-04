@@ -2,15 +2,17 @@
 /// Shaun Harker 
 /// 2011
 
-#include <set>
-#include <deque>
-#include <unistd.h>
+#ifndef CLUSTER_DELEGATOR_HPP
+#define CLUSTER_DELEGATOR_HPP
+
+#ifndef CLUSTER_DELEGATOR_IS_AMALGAMATION
+#include "delegator.h"
+#endif
+
 #include <exception>
 #include <stdexcept>
-
-/***************************************
- *         USER INTERFACE              *
- ***************************************/
+#include <thread>
+#include <mpi.h>
 
 namespace delegator {
   
@@ -56,3 +58,5 @@ namespace delegator {
     return 0; 
   }
 }
+
+#endif

@@ -2,6 +2,14 @@
 /// Shaun Harker 
 /// 2011
 
+#ifndef CLUSTER_DELEGATOR_COORDINATOR_WORKER_SCHEME_HPP
+#define CLUSTER_DELEGATOR_COORDINATOR_WORKER_SCHEME_HPP
+
+#ifndef CLUSTER_DELEGATOR_IS_AMALGAMATION
+#include "delegator/Coordinator_Worker_Scheme.h"
+#include "delegator/Message.h"
+#endif
+
 #include <thread>
 #include <chrono>
 #include <mutex>
@@ -179,3 +187,5 @@ run_worker ( void) {
     my_communicator -> send ( result_message, boss );
   }
 }
+
+#endif

@@ -2,15 +2,22 @@
 /// Shaun Harker 
 /// 2011
 
-#include "mpi.h"
-#include <string>
+#ifndef CLUSTER_DELEGATOR_COMMUNICATOR_HPP
+#define CLUSTER_DELEGATOR_COMMUNICATOR_HPP
+
+#ifndef CLUSTER_DELEGATOR_IS_AMALGAMATION
+#include "Communicator.h"
+#endif
+
+#include <iostream>
+#include <mpi.h>
+#include <chrono>
 #include <stdexcept>
 #include <exception>
-#include <string>
 #include <cstdint>
 #include <algorithm>
 #include <thread>
-#include <chrono>
+#include <string>
 
 #ifndef CD_MAX_MESSAGE_SIZE
 #define CD_MAX_MESSAGE_SIZE 1073741824L
@@ -238,3 +245,4 @@ halt ( void ) {
   daemon_on . store ( false );
 }
 
+#endif

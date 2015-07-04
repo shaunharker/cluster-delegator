@@ -101,6 +101,4 @@ public:
 
 };
 
-#include "delegator/Message.hpp"
-
 #endif

@@ -2,6 +2,17 @@
 /// Shaun Harker 
 /// 2011
 
+#ifndef CLUSTER_DELEGATOR_MESSAGE_HPP
+#define CLUSTER_DELEGATOR_MESSAGE_HPP
+
+#ifndef CLUSTER_DELEGATOR_IS_AMALGAMATION
+#include "Message.h"
+#endif
+
+#include <string>
+#include "boost/archive/binary_iarchive.hpp"
+#include "boost/archive/binary_oarchive.hpp"
+
 // Templated Functions
 template < class T >
 Message & Message::
@@ -79,3 +90,5 @@ operator = ( Message & rhs ) {
   str ( rhs . str () );
   return * this;
 }
+
+#endif

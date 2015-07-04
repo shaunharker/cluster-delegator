@@ -5,7 +5,10 @@
 #ifndef CLUSTER_DELEGATOR_COORDINATOR_WORKER_PROCESS_H
 #define CLUSTER_DELEGATOR_COORDINATOR_WORKER_PROCESS_H
 
+#ifndef CLUSTER_DELEGATOR_IS_AMALGAMATION
 #include "delegator/Message.h"
+#endif
+
 #include <stack>
 
 /// Coordinator_Worker_Process
@@ -57,7 +60,5 @@ public:
   virtual void 
   finalize ( void );
 };
-
-#include "delegator/Coordinator_Worker_Process.hpp"
 
 #endif

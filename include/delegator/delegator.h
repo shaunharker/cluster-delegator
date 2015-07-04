@@ -5,12 +5,14 @@
 #ifndef CLUSTER_DELEGATOR_H
 #define CLUSTER_DELEGATOR_H
 
-#include "delegator/Message.h"
-#include "delegator/Communicator.h"
-#include "delegator/Coordinator_Worker_Scheme.h"
+#ifndef CLUSTER_DELEGATOR_IS_AMALGAMATION
+#include "delegator/Message.hpp"
+#include "delegator/Communicator.hpp"
+#include "delegator/Coordinator_Worker_Scheme.hpp"
+#include "delegator/Coordinator_Worker_Process.hpp"
+#endif
 
 namespace delegator {
-// Simplest interface: call start, then run, then stop.
   /// Start
   ///   Initialize the MPI world
   void 
@@ -39,6 +41,8 @@ namespace delegator {
   Run ( int argc, char * argv [] );
 }
 
+#ifndef CLUSTER_DELEGATOR_IS_AMALGAMATION
 #include "delegator/delegator.hpp"
+#endif
 
 #endif

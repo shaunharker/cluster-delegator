@@ -5,7 +5,10 @@
 #ifndef CLUSTER_DELEGATOR_COMMUNICATOR_H
 #define CLUSTER_DELEGATOR_COMMUNICATOR_H
 
+#ifndef CLUSTER_DELEGATOR_IS_AMALGAMATION
 #include "delegator/Message.h"
+#endif
+
 #include <mutex>
 #include <atomic>
 #include <unordered_map>
@@ -26,33 +29,42 @@ public:
   
   /// daemon
   ///   call on main thread. Run-loop which handles MPI.
-  void daemon ( void );
+  void 
+  daemon ( void );
 
   /// initialize
   ///   - Responsible for initializing communications.
   ///   - Responsible for setting the values of DIRECTOR, SELF, ANYSOURCE, ANYTAG.
-  void initialize ( void );
+  void 
+  initialize ( void );
   
   /// finalize
   ///   - Responsible for finalizing communications. 
-  void finalize ( void );
+  void 
+  finalize ( void );
   
   /// send
   ///   sends the contents of send_me to "target"               
-  void send ( const Message & send_me, const Channel & target );
+  void 
+  send ( Message const& send_me, 
+         Channel const& target );
  
   /// receive
   ///   Receives a message and stores it in "receive_me".
   ///   Identity of sender is stored in "sender"
-  void receive ( Message * receive_me, Channel * sender ); 
+  void 
+  receive ( Message * receive_me, 
+            Channel * sender ); 
  
   /// coordinating ( void );
   ///   Checks to see if this is a "coordinating" node.
-  bool coordinating ( void );
+  bool 
+  coordinating ( void );
 
   /// halt
   ///   Stop daemon
-  void halt ( void );
+  void 
+  halt ( void );
 
 private:
   std::mutex mtx;
@@ -61,7 +73,5 @@ private:
   std::queue<std::pair<Channel, Message>> inbox;
   std::queue<std::pair<Channel, Message>> outbox;
 };
-
-#include "delegator/Communicator.hpp"
 
 #endif
