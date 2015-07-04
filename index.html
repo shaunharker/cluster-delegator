@@ -452,19 +452,18 @@ MathJax.Hub.Config({
 <li><a href="#_linux">Linux</a></li>
 </ul>
 </li>
-<li><a href="#_examples">Examples</a>
-<ul class="sectlevel2">
-<li><a href="#_skeleton_example">Skeleton Example</a></li>
-<li><a href="#_included_examples">Included Examples</a></li>
-</ul>
-</li>
 <li><a href="#_the_scheme">The Scheme</a></li>
 <li><a href="#_jobs_results_and_messages">Jobs, Results, and Messages</a></li>
 <li><a href="#_methods">Methods</a></li>
-<li><a href="#_member_variables">Member Variables</a></li>
-<li><a href="#_default_methods">Default Methods</a></li>
-<li><a href="#_examples_in_depth">Examples in depth</a>
+<li><a href="#_default_implementation">Default Implementation</a>
 <ul class="sectlevel2">
+<li><a href="#_base_class_member_variables">Base class member variables</a></li>
+<li><a href="#_base_class_default_methods">Base class default methods</a></li>
+</ul>
+</li>
+<li><a href="#_examples">Examples</a>
+<ul class="sectlevel2">
+<li><a href="#_skeleton_example">Skeleton Example</a></li>
 <li><a href="#__code_example1_code"><code>example1</code></a></li>
 <li><a href="#__code_example2_code"><code>example2</code></a></li>
 </ul>
@@ -491,12 +490,100 @@ MathJax.Hub.Config({
 <h2 id="_overview">Overview</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Cluster-Delegator is a developer package to assist in writing C++ applications utilizing MPI on a cluster in a single-coordinator/many-worker (star topology) arrangement.</p>
+<p><a href="https://github.com/shaunharker/cluster-delegator">Cluster-Delegator</a> is a developer package to assist in writing C++ applications utilizing MPI on a cluster in a single-coordinator/many-worker (star topology) arrangement. The MPI interface is abstracted away. Instead, one constructs a program by writing methods for a class <code>Process</code> which define how to create jobs, how to work jobs to produce results, and how to process the results. The cluster-delegator machinery then takes care of all of the interprocess communication. Jobs and results are handled using the <code>&lt;&lt;</code> and <code>&gt;&gt;</code> streaming operators which will package data structures (any data structure with a <code>serialize</code> method as described in the <a href="http://www.boost.org/doc/libs/1_58_0/libs/serialization/doc/index.html">boost serialization</a> manual) into a message class.</p>
+</div>
+<div class="paragraph">
+<p>Here is the "Hello World!" program:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp" data-lang="cpp">#include "delegator/delegator.h"
+#include &lt;string&gt;
+#include &lt;vector&gt;
+
+class Process : public Coordinator_Worker_Process {
+public:
+  void command_line ( int argcin, char * argvin [] ) {
+    std::cout &lt;&lt; "This is called by every process at start!\n";
+  }
+  void initialize ( void ) {
+    std::cout &lt;&lt; "This is called by the coordinator before jobs start!\n";
+    current_job_number = 0;
+    names = { "Shaun", "Pawel", "Ippei", "World" };
+    total_number_of_jobs = names . size ();
+  }
+  int prepare ( Message &amp; job_message ) {
+    std::cout &lt;&lt; "This is called by the coordinator to produce jobs!\n";
+    if ( current_job_number == total_number_of_jobs ) return 1; // Code 1: No more jobs!
+    job_message &lt;&lt; names [ current_job_number ++ ];   return 0; // Code 0: A job was sent!
+  }
+  void work ( Message &amp; result_message, Message const&amp; job_message ) const {
+    std::cout &lt;&lt; "This method is called by a worker receiving a job!\n";
+    std::string name; job_message &gt;&gt; name;
+    std::string greeting = "Hello " + name + "!";
+    result_message &lt;&lt; greeting;
+  }
+  void accept ( Message const&amp; result_message ) {
+    std::cout &lt;&lt; "This is called by the coordinator to process a result!\n";
+    std::string data; result_message &gt;&gt; data;
+    std::cout &lt;&lt; data &lt;&lt; "\n";
+  }
+  void finalize ( void ) {
+    std::cout &lt;&lt; "This is called by the coordinator when all jobs are done!\n";
+  }
+private:
+  // Each process has its own copy of the member variables below:
+  int current_job_number;
+  int total_number_of_jobs;
+  std::vector&lt;std::string&gt; names;
+};
+
+int main ( int argc, char * argv [] ) {
+  delegator::Start ();
+  delegator::Run &lt; Process &gt; (argc, argv);
+  delegator::Stop ();
+  return 0;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Here is (one possible) output of this "Hello World!" program with a 3 process MPI job:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">&gt; mpiexec -np 3 ./bin/helloworld</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>This is called by every process at start!
+This is called by every process at start!
+This is called by the coordinator before jobs start!
+This is called by every process at start!
+This is called by the coordinator to produce jobs!
+This is called by the coordinator to produce jobs!
+This is called by the coordinator to produce jobs!
+This is called by the coordinator to produce jobs!
+This method is called by a worker receiving a job!
+This method is called by a worker receiving a job!
+This is called by the coordinator to process a result!
+Hello Pawel!
+This is called by the coordinator to process a result!
+Hello Ippei!
+This is called by the coordinator to produce jobs!
+This method is called by a worker receiving a job!
+This method is called by a worker receiving a job!
+This is called by the coordinator to process a result!
+Hello Shaun!
+This is called by the coordinator to process a result!
+Hello World!
+This is called by the coordinator when all jobs are done!</pre>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_acknowledgements">Acknowledgements</h3>
 <div class="paragraph">
-<p>This software was developed in response to group discussions involving Shaun Harker, Pawel Pilarczyk, and Ippei Obayashi in 2010.</p>
+<p>This software was developed in group discussions between Shaun Harker, Pawel Pilarczyk, and Ippei Obayashi in 2010. The current thread-based implementation is due to Shaun Harker.</p>
 </div>
 <div class="paragraph">
 <p>The Coordinator-Worker scheme is described in Section 3 of the following paper:</p>
@@ -532,7 +619,7 @@ MathJax.Hub.Config({
 <div class="ulist">
 <ul>
 <li>
-<p>Get home-brew (if you don&#8217;t already have it, or prefer some other installer)</p>
+<p>Get home-brew (if you don&#8217;t already have it)</p>
 </li>
 </ul>
 </div>
@@ -594,17 +681,34 @@ cd cluster-delegator
 ./install.sh</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>Either of these approaches will result in the software being installed into</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">/usr/local/include/delagator</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If another directory is required (e.g. you don&#8217;t have privileges) use</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>./install --prefix=/path/to/install/folder</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>but be sure to include this path in <code>-I</code> directives when you compile your software which uses it.</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_linux">Linux</h3>
 <div class="paragraph">
-<p>Use a package manager, or else follow the directions on the OpenMPI and Boost websites to install the prerequisites. Then:</p>
+<p>For Linux, a package manager, or else follow the directions on the OpenMPI and Boost websites to install the prerequisites. Then either download the tarball off <a href="https://github.com/shaunharker/cluster-delegator">Github</a> (for the stable version) or else clone the repo. In either case, run</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">git clone https://github.com/shaunharker/cluster-delegator.git
-cd cluster-delegator
-./install --prefix=/path/to/install/folder</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">./install --prefix=/path/to/install/folder</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -615,48 +719,11 @@ cd cluster-delegator
 <pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">/path/to/install/include/delegator</code></pre>
 </div>
 </div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_examples">Examples</h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="_skeleton_example">Skeleton Example</h3>
 <div class="paragraph">
-<p>The simplest program using the software is as follows:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-cpp" data-lang="cpp">#include "delegator/delegator.h"
-
-class Process : public Coordinator_Worker_Process {};
-
-int main ( int argc, char * argv [] ) {
-  delegator::Start ();
-  delegator::Run &lt; Process &gt; (argc, argv);
-  delegator::Stop ();
-}</code></pre>
-</div>
+<p>One might also refer to the <code>.travis.yml</code> file, the scripts in the hidden <code>.install</code> directory of the project, and the log of the latest <a href="https://travis-ci.org/shaunharker/cluster-delegator">Travis CI</a> build for this project.</p>
 </div>
 <div class="paragraph">
-<p>This program creates no jobs, sends no jobs, works no jobs, creates no results, and stores no results. But it does initialize the delegator system. And it can easily be modified into a program
-that DOES do something, by fleshing out class Process by providing overrides of methods in Coordinator_Worker_Process. These methods are discussed below.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_included_examples">Included Examples</h3>
-<div class="paragraph">
-<p>The quickest way (for the brave) to learn how to use cluster-delegator is to look at the examples</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code>   ./examples/example1.cpp
-   ./examples/example2.cpp</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>You should take a look at these and try to reason them out a little bit. Many people will probably be quite close to understanding more or less how the software works just by seeing these examples. (But don&#8217;t worry, we give an explanation below if it doesn&#8217;t just click!)</p>
+<p>If all else fails, write me at <a href="mailto:sharker@math.rutgers.edu">sharker@math.rutgers.edu</a>.</p>
 </div>
 </div>
 </div>
@@ -676,12 +743,14 @@ this works, we&#8217;ll describe the behavior of the algorithm called by
 <p>Of the N processes, N-1 are workers and 1 is a coordinator.</p>
 </li>
 <li>
-<p>The coordinator is responsible for writing "jobs" and
-reading "results".</p>
+<p>The coordinator is responsible for preparing <em>jobs</em> and
+accepting <em>results</em>. This is accomplished via the methods <code>prepare</code> and <code>accept</code>.</p>
 </li>
 <li>
-<p>The workers are responsible for accepting "jobs" and working them,
-thus producing "results"</p>
+<p>The workers are responsible for working <em>jobs</em> to produce <em>results</em>. This is accomplished via the method <code>work</code>.</p>
+</li>
+<li>
+<p>There are some initialization routines and a finalization routine. This is covered by the methods <code>command_line</code>, <code>initialize</code>, and <code>finalize</code>.</p>
 </li>
 </ul>
 </div>
@@ -691,7 +760,7 @@ thus producing "results"</p>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>One of the processes decides it is a coordinator, the others decide they are workers. The processes each execute the method</p>
+<p>One of the processes decides it is a coordinator, and all the others decide they are workers. The processes each execute the method</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-cpp" data-lang="cpp">void Process::command_line ( int argc, char * argv [] );</code></pre>
@@ -710,7 +779,7 @@ thus producing "results"</p>
 </div>
 </li>
 <li>
-<p>The next three things happen in an interspersed fashion, on demand as workers, jobs, and results become available:</p>
+<p>The next three things happen in an interspersed fashion, on demand, as workers, jobs, and results become available:</p>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
@@ -721,7 +790,7 @@ thus producing "results"</p>
 </div>
 </div>
 <div class="paragraph">
-<p>in order to create "job_message" which is sent to a worker.</p>
+<p>in order to create <code>job_message</code> which will eventually be sent to a worker.</p>
 </div>
 </li>
 <li>
@@ -733,7 +802,7 @@ thus producing "results"</p>
 </div>
 </div>
 <div class="paragraph">
-<p>on "job_message" received from the coordinator in order to produce "result_message" which is sent back to the coordinator.</p>
+<p>on <code>job_message</code> received from the coordinator in order to produce <code>result_message</code> which is sent back to the coordinator.</p>
 </div>
 </li>
 <li>
@@ -744,7 +813,7 @@ thus producing "results"</p>
 </div>
 </div>
 <div class="paragraph">
-<p>on the "result_message" which was received from a worker.</p>
+<p>on the <code>result_message</code> which was received from a worker.</p>
 </div>
 </li>
 </ol>
@@ -800,8 +869,7 @@ job_message &lt;&lt; jobdata4;</code></pre>
 <h2 id="_methods">Methods</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>There are six methods which may be overridden in
-Coordinator_Worker_Process. They are:</p>
+<p>There are six methods one writes in their <code>Process</code> class:</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
@@ -821,46 +889,70 @@ Coordinator_Worker_Process. They are:</p>
 <p><code>accept</code>: accept a result and handle it in some way</p>
 </li>
 <li>
-<p><code>finalize</code>: Finish up after all jobs have been `accept`ed do whatever is left to do before the program shuts down.</p>
+<p><code>finalize</code>: Finish up with whatever is suitable after all jobs have been prepared and accepted.</p>
 </li>
 </ol>
 </div>
 <div class="paragraph">
-<p>Each of these methods has a default behavior, specified in the base class Coordinator_Worker_Process. These functions are called by the Coordinator_Worker_Scheme algorithm. Since a process is either a coordinator or a worker, the methods divide up into the methods called by the coordinator process, and the methods called by the worker processes, and methods called by both.</p>
+<p>Only one of these processes has a return value, which is <code>prepare</code>. It returns 0, 1, or 2, depending on the situation. For simple programs, it returns 0 while it is producing jobs, and then switches to returning 1 to indicate there are no jobs left. More sophisticated programs might make use of the "2 option". The "2 option" says "There will be more jobs, but not right now." This would be used in the situation where results need to be `accept`ed first to determine what ought to be computed next.</p>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p>All processes: <code>command_line</code></p>
-</li>
-<li>
-<p>Coordinator only: <code>initialize</code>, <code>prepare</code>, <code>accept</code>, <code>finalize</code></p>
-</li>
-<li>
-<p>Worker only: <code>work</code></p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>Only one of these processes has a return value, which is <code>prepare</code>. It returns 0, 1, or 2, depending on the situation. For simple programs, it returns 0 while it is producing jobs, and then switches to returning 1 to indicate there are no jobs left. More sophisticated programs might make use of the 2 option. The 2 options says "There will be more jobs, but not right now." This would be used in the situation where results need to be `accept`ed first to determine what ought to be computed next.</p>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+The 2 option (i.e. "no jobs for now, maybe later") has not yet been tested!
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_member_variables">Member Variables</h2>
+<h2 id="_default_implementation">Default Implementation</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p><code>Coordinator_Worker_Process</code> has several member variables, which are inherited by the user-supplied <code>Process</code>, and are used by default implementations of the methods.</p>
+<p>The user-defined <code>Process</code> class is actually derived from a base class called <code>Coordinator_Worker_Process</code>: See the line from the "Hello World!" example above:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>class Process : public Coordinator_Worker_Process {</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The base class <code>Coordinator_Worker_Process</code> actually defines all the methods. When the user defines them again in the derived class <code>Process</code>, they override them with their own desired behaviors. However, the default behaviors in the base class are not entirely useless and can be used if one wants to simplify the program even further. To use the default behavior, one simply does not write the method definition in the derived class <code>Process</code>. (If one is new to C<code>, here is a description of <a href="http://www.cplusplus.com/doc/tutorial/inheritance/">C</code> class inheritance</a>).)</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+If the user overrides all the default methods, the material in the section is not important and can be ignored. We will repeat this note a few times!
+</td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_base_class_member_variables">Base class member variables</h3>
+<div class="paragraph">
+<p>The default implementations make use of some member variables belonging to the base class, which we now describe:</p>
+</div>
+<div class="paragraph">
+<p>The default behavior of <code>command_line</code> (i.e. the base class implementation) is to set base class member variables <code>argc</code> and <code>argv</code> to match the command line parameters handed to main.</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-cpp" data-lang="cpp">/*----- Command line arguments -----*/
 int argc;
-char * * argv;</code></pre>
+char ** argv;</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The default behavior of <code>command_line</code> is to set <code>argc</code> and <code>argv</code> to match the command line parameters handed to main.</p>
+<p>There are also a couple stacks used by the base class implementations of <code>prepare</code> and <code>accept</code>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -870,7 +962,7 @@ std::stack &lt; Message &gt; RECEIVED_RESULTS;</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p><code>JOBS_TO_SEND</code> is a stack which is intended to be populated by the user override of "initialize". The user would create jobs, make them into job messages, and push them onto the <code>JOBS_TO_SEND</code> stack. The default implementation of the <code>prepare</code> method pops a job message from <code>JOBS_TO_SEND</code> and writes to its argument (which is then sent off to a worker.)</p>
+<p><code>JOBS_TO_SEND</code> is a stack which is intended to be populated by the user override of <code>initialize</code>. The user would create jobs, make them into job messages, and push them onto the <code>JOBS_TO_SEND</code> stack. The default implementation of the <code>prepare</code> method pops a job message from <code>JOBS_TO_SEND</code> and writes to its argument (which is then sent off to a worker.)</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -900,10 +992,8 @@ It is <strong>not</strong> necessary to use <code>RECEIVED_RESULTS</code>. This 
 </table>
 </div>
 </div>
-</div>
-<div class="sect1">
-<h2 id="_default_methods">Default Methods</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="_base_class_default_methods">Base class default methods</h3>
 <div class="paragraph">
 <p>Here we describe the default behaviors of the methods of <code>Coordinator_Worker_Process</code>. These behaviors have been discussed already with respect to how they affect the member variables (in particular the message stacks), but we error on the side of redundancy and give them again here.</p>
 </div>
@@ -926,8 +1016,7 @@ It is <strong>not</strong> necessary to use <code>RECEIVED_RESULTS</code>. This 
 </div>
 </div>
 <div class="paragraph">
-<p>if so, it pops that item from the stack and writes it to
-<code>job_message</code> and returns code 0, which means "i produced a job." Otherwise, it returns code 1, which means "no jobs left to produce" It NEVER returns code 2, which would mean "I am waiting on information before I can produce more jobs"</p>
+<p>if so, it pops that item from the stack and writes it to <code>job_message</code> and returns code 0, which means "Produced a job." Otherwise, it returns code 1, which means "No jobs left to produce." It <strong>does not</strong> return code 2, which would mean "Waiting on information before jobs can be produced."</p>
 </div>
 <div class="ulist">
 <ul>
@@ -952,16 +1041,50 @@ pushes the message "result_message" onto the member variable</p>
 </li>
 </ul>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+It is <strong>not</strong> necessary to use any of the base class implementations. The user can override all of them.
+</td>
+</tr>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_examples_in_depth">Examples in depth</h2>
+<h2 id="_examples">Examples</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="_skeleton_example">Skeleton Example</h3>
+<div class="paragraph">
+<p>The simplest program using the software is as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp" data-lang="cpp">#include "delegator/delegator.h"
+
+class Process : public Coordinator_Worker_Process {};
+
+int main ( int argc, char * argv [] ) {
+  delegator::Start ();
+  delegator::Run &lt; Process &gt; (argc, argv);
+  delegator::Stop ();
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This program creates no jobs, sends no jobs, works no jobs, creates no results, and stores no results. But it does initialize the delegator system. And it can easily be modified into a program that does do something, by filling out class Process by providing overrides of methods in Coordinator_Worker_Process. These methods are discussed below.</p>
+</div>
+</div>
 <div class="sect2">
 <h3 id="__code_example1_code"><code>example1</code></h3>
 <div class="paragraph">
-<p>The easiest way to use the software is to only override
-<code>initialize</code>, <code>work</code>, and <code>finalize</code>. This is what is done in</p>
+<p>Perhaps the easiest way to use the software is to only override <code>initialize</code>, <code>work</code>, and <code>finalize</code>. This is what is done in</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -974,7 +1097,7 @@ pushes the message "result_message" onto the member variable</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>initialize</code>: Invent jobs, turn them into `job_message`s, and push them onto
+<p><code>initialize</code>: Invent jobs, turn them into <code>job_message</code> objects, and push them onto
 the member variable</p>
 </li>
 </ul>
@@ -1005,12 +1128,7 @@ the member variable</p>
 <div class="sect2">
 <h3 id="__code_example2_code"><code>example2</code></h3>
 <div class="paragraph">
-<p>One does not have to use the default behavior of <code>prepare</code> and <code>accept</code>
-and may override them not to use the <code>JOBS_TO_SEND</code> and <code>RECEIVED_RESULTS</code>
-stacks at all.</p>
-</div>
-<div class="paragraph">
-<p>By overriding all the methods, one has a considerable degree of control, and can even arrange to wait until certain results have arrived before determining what the next jobs should be. The function <code>prepare</code> can report a return value of 2 if it wishes to indicate it is in this "waiting for more results to be dealt with by <code>accept</code> before I can create a new job". This allows <code>prepare</code> to not produce a job_message, but not cause the distributed computing scheme to believe there are no jobs left and start retiring free workers.</p>
+<p>One does not have to use the default behavior of <code>prepare</code> and <code>accept</code> as done in <code>example1</code> and may instead override them not to use the <code>JOBS_TO_SEND</code> and <code>RECEIVED_RESULTS</code> stacks. We provide an example somewhat more complicated than <code>examples/helloworld.cpp</code> in the source code as <code>examples/example2.cpp</code>.</p>
 </div>
 </div>
 </div>
@@ -1084,9 +1202,7 @@ mpicxx -lboost_serialization example2.o -o example2</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The number "8" is arbitrary; it&#8217;s the number of processes you&#8217;d like. If you
-have a double core system, probably "3" is a good choice (one of the processes
-will spend most of its time sleeping.) It&#8217;s OK to put more cores than you have&#8201;&#8212;&#8201;the OS can schedule them.</p>
+<p>The number "8" is arbitrary; it&#8217;s the number of processes you&#8217;d like. If you have a double core system, probably "3" is a good choice (one of the processes will spend most of its time sleeping.) It&#8217;s OK to put more cores than you have&#8201;&#8212;&#8201;the OS can schedule them.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1115,8 +1231,7 @@ mpiexec ./my_program</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>In this simple example, we specified to use 10 nodes with 8 processors per
-node.</p>
+<p>In this simple example, we specified to use 10 nodes with 8 processors per node.</p>
 </div>
 <div class="paragraph">
 <p>To submit the program to the cluster, one would type</p>
@@ -1169,7 +1284,7 @@ qsub script.sh   #submit the job!</code></pre>
 <div class="ulist">
 <ul>
 <li>
-<p>2015-07-03. Releasing v2.0.</p>
+<p>2015-07-04. Releasing v2.0.</p>
 <div class="ulist">
 <ul>
 <li>
@@ -1215,7 +1330,7 @@ qsub script.sh   #submit the job!</code></pre>
 <div id="footer">
 <div id="footer-text">
 Version 2.0<br>
-Last updated 2015-07-04 01:53:13 EDT
+Last updated 2015-07-04 05:19:51 EDT
 </div>
 </div>
 </body>
