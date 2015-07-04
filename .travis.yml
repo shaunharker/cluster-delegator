@@ -29,7 +29,7 @@ install:
 script: 
   - ./install.sh
   - cd examples
-  - ../.install/build.sh --test
+  - ../.install/build.sh --build=Debug --test
   - cd ..
 after_success: 
   - coveralls -E ".*lib.*" -E ".*usr.*" -E ".*boost.*" --gcov-options '\-lp' --gcov /usr/bin/gcov-4.8
