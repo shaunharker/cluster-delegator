@@ -5,6 +5,10 @@
 #ifndef CLUSTER_DELEGATOR_COORDINATOR_WORKER_SCHEME_HPP
 #define CLUSTER_DELEGATOR_COORDINATOR_WORKER_SCHEME_HPP
 
+#ifndef INLINE_IF_HEADER_ONLY
+#define INLINE_IF_HEADER_ONLY
+#endif
+
 #ifndef CLUSTER_DELEGATOR_IS_AMALGAMATION
 #include "delegator/Coordinator_Worker_Scheme.h"
 #include "delegator/Message.h"
@@ -26,12 +30,12 @@
 #define CD_TICKTIME ((double)(std::chrono::system_clock::now().time_since_epoch().count()%1000000000LL))/1000000.0
 #endif
 
-inline Coordinator_Worker_Scheme::
+INLINE_IF_HEADER_ONLY Coordinator_Worker_Scheme::
 Coordinator_Worker_Scheme ( int argc, char * argv [] ) 
 : argc ( argc ), argv ( argv ), received(0), sent(0) {}
 
 /* Coordinator_Worker_Scheme::run() */
-inline void Coordinator_Worker_Scheme::
+INLINE_IF_HEADER_ONLY void Coordinator_Worker_Scheme::
 run ( Coordinator_Worker_Process * process,
       Communicator * communicator ) {
   my_process = process;
@@ -47,7 +51,7 @@ run ( Coordinator_Worker_Process * process,
   my_communicator -> halt ();
 }
 
-inline void Coordinator_Worker_Scheme::
+INLINE_IF_HEADER_ONLY void Coordinator_Worker_Scheme::
 coordinator_incoming ( void ) {
   while ( not done ) { 
     // Check if expecting more results
@@ -86,7 +90,7 @@ coordinator_incoming ( void ) {
   }
 }
 
-inline void Coordinator_Worker_Scheme::
+INLINE_IF_HEADER_ONLY void Coordinator_Worker_Scheme::
 coordinator_outgoing ( void ) {
   while ( not done ) {
     // Check if there is a worker available and a job ready.
@@ -111,7 +115,7 @@ coordinator_outgoing ( void ) {
   }
 }
 
-inline void Coordinator_Worker_Scheme::
+INLINE_IF_HEADER_ONLY void Coordinator_Worker_Scheme::
 coordinator_preparing ( void ) {
   while ( not out_of_jobs ) {
     // See if there is a need to prepare more jobs (i.e. too few ready)
@@ -147,7 +151,7 @@ coordinator_preparing ( void ) {
   }
 }
 
-inline void Coordinator_Worker_Scheme::
+INLINE_IF_HEADER_ONLY void Coordinator_Worker_Scheme::
 run_coordinator ( void ) {
   done = false; out_of_jobs = false;
   // Call the user's "initialize" method
@@ -164,7 +168,7 @@ run_coordinator ( void ) {
   my_process -> finalize ();
 }
 
-inline void Coordinator_Worker_Scheme::
+INLINE_IF_HEADER_ONLY void Coordinator_Worker_Scheme::
 run_worker ( void) {
   Channel boss = my_communicator -> DIRECTOR;
   while ( true ) {

@@ -5,6 +5,10 @@
 #ifndef CLUSTER_DELEGATOR_COMMUNICATOR_HPP
 #define CLUSTER_DELEGATOR_COMMUNICATOR_HPP
 
+#ifndef INLINE_IF_HEADER_ONLY
+#define INLINE_IF_HEADER_ONLY
+#endif
+
 #ifndef CLUSTER_DELEGATOR_IS_AMALGAMATION
 #include "Communicator.h"
 #endif
@@ -33,13 +37,13 @@
 #define CD_TICKTIME ((double)(std::chrono::system_clock::now().time_since_epoch().count()%1000000000LL))/1000000.0
 #endif
 
-inline void Communicator::
+INLINE_IF_HEADER_ONLY void Communicator::
 initialize ( void ) {
 	MPI_Comm_rank(MPI_COMM_WORLD, &SELF);
   DIRECTOR = 0;
 }
 
-inline void Communicator::
+INLINE_IF_HEADER_ONLY void Communicator::
 finalize ( void ) {
   // Shut-down message
   int numtasks;
@@ -50,7 +54,7 @@ finalize ( void ) {
   }
 }
 
-inline void Communicator::
+INLINE_IF_HEADER_ONLY void Communicator::
 daemon ( void ) {
   daemon_on . store ( true );
   while ( 1 ) {
@@ -200,7 +204,7 @@ daemon ( void ) {
   }
 }
 
-inline void Communicator::
+INLINE_IF_HEADER_ONLY void Communicator::
 send ( const Message & message, 
        const Channel & channel ) {
   mtx . lock ();
@@ -212,7 +216,7 @@ send ( const Message & message,
   mtx . unlock ();
 }
 
-inline void Communicator::
+INLINE_IF_HEADER_ONLY void Communicator::
 receive ( Message * message, 
           Channel * channel ) {
   while ( 1 ) {
@@ -235,12 +239,12 @@ receive ( Message * message,
   }
 } 
 
-inline bool Communicator::
+INLINE_IF_HEADER_ONLY bool Communicator::
 coordinating ( void ) {
   return ( SELF == DIRECTOR );
 }
 
-inline void Communicator:: 
+INLINE_IF_HEADER_ONLY void Communicator:: 
 halt ( void ) {
   daemon_on . store ( false );
 }

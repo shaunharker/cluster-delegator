@@ -2,7 +2,7 @@
 // Shaun Harker
 // 2015-07-04
 
-#include "delegator/delegator.h"
+#include "cluster-delegator.hpp"
 #include <string>
 #include <vector>
 

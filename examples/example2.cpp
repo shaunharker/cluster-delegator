@@ -19,7 +19,7 @@
 
 // Lower max message size to test if it will split them up
 #define CD_MAX_MESSAGE_SIZE 1024
-#include "delegator/delegator.h"
+#include "cluster-delegator.hpp"
 
 void comment ( void ) {
   std::cout << "  This example generates a sequence of integers 0 <= i < n\n "

@@ -447,6 +447,9 @@ MathJax.Hub.Config({
 </li>
 <li><a href="#_installation">Installation</a>
 <ul class="sectlevel2">
+<li><a href="#_header_only">Header-only</a></li>
+<li><a href="#_header_and_library">Header and library</a></li>
+<li><a href="#_files">Files</a></li>
 <li><a href="#_dependencies">Dependencies</a></li>
 <li><a href="#_mac_os_x">Mac OS X</a></li>
 <li><a href="#_linux">Linux</a></li>
@@ -497,7 +500,7 @@ MathJax.Hub.Config({
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-cpp" data-lang="cpp">#include "delegator/delegator.h"
+<pre class="highlightjs highlight"><code class="language-cpp" data-lang="cpp">#include "cluster-delegator.hpp"
 #include &lt;string&gt;
 #include &lt;vector&gt;
 
@@ -601,8 +604,87 @@ This is called by the coordinator when all jobs are done!</pre>
 <div class="sect1">
 <h2 id="_installation">Installation</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>The library comes in two flavors. Both are installed by default.</p>
+</div>
+<div class="sect2">
+<h3 id="_header_only">Header-only</h3>
+<div class="paragraph">
+<p>There is a header-only version of the software, which can be used with the following include:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp" data-lang="cpp">#include "cluster-delegator.hpp"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This is a single header file which contains the entire project. All functions are either templated or declared inline. This prevents duplicate symbol errors when linking together different translation units which both include this.</p>
+</div>
+<div class="paragraph">
+<p>For backwards compatibility reasons, the header-only file will be copied in two locations, which are, assuming an install prefix of <code>/usr/local</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">/usr/local/include/cluster-delegator.hpp  # Include the one here
+/usr/local/include/delegator/delegator.h  # Not this deprecated one</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_header_and_library">Header and library</h3>
+<div class="paragraph">
+<p>The second flavor is the header/library approach. To use this approach, include</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp" data-lang="cpp">#include "cluster-delegator.h"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>and link against <code>libcluster-delegator</code>. Both static and shared libraries are available.</p>
+</div>
+<div class="paragraph">
+<p>The libraries should be in</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">/usr/local/lib/libcluster-delegator.a
+/usr/local/lib/libcluster-delegator.so</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+For Mac OS X, the <code>.so</code> will instead be <code>.dylib</code>.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_files">Files</h3>
+<div class="paragraph">
+<p>To recap, the installation will produce the following files:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">/usr/local/include/cluster-delegator.hpp  # single-file header-only library
+/usr/local/include/delegator/delegator.h  # single-file header-only library (deprecated)
+/usr/local/include/cluster-delegator.h    # declarations and template code only
+/usr/local/lib/libcluster-delegator.a     # static library
+/usr/local/lib/libcluster-delegator.so    # shared library</code></pre>
+</div>
+</div>
+</div>
 <div class="sect2">
 <h3 id="_dependencies">Dependencies</h3>
+<div class="paragraph">
+<p>In order to use the software the following are required:</p>
+</div>
 <div class="ulist">
 <ul>
 <li>
@@ -686,7 +768,7 @@ cd cluster-delegator
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">/usr/local/include/delagator</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">/usr/local/include/</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -704,7 +786,7 @@ cd cluster-delegator
 <div class="sect2">
 <h3 id="_linux">Linux</h3>
 <div class="paragraph">
-<p>For Linux, a package manager, or else follow the directions on the OpenMPI and Boost websites to install the prerequisites. Then either download the tarball off <a href="https://github.com/shaunharker/cluster-delegator">Github</a> (for the stable version) or else clone the repo. In either case, run</p>
+<p>For Linux, use a package manager, or else follow the directions on the OpenMPI and Boost websites to install the prerequisites. Then either download the tarball off <a href="https://github.com/shaunharker/cluster-delegator">Github</a> (for the stable version) or else clone the repo. In either case, run</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -712,11 +794,11 @@ cd cluster-delegator
 </div>
 </div>
 <div class="paragraph">
-<p>whereupon the headers (this is a header only library) will be copied into</p>
+<p>whereupon the <code>cluster-delegator.hpp</code> header file will be copied into</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">/path/to/install/include/delegator</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">/path/to/install/include/</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1054,7 +1136,7 @@ It is <strong>not</strong> necessary to use any of the base class implementation
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-cpp" data-lang="cpp">#include "delegator/delegator.h"
+<pre class="highlightjs highlight"><code class="language-cpp" data-lang="cpp">#include "cluster-delegator.hpp"
 
 class Process : public Coordinator_Worker_Process {};
 
@@ -1318,7 +1400,7 @@ qsub script.sh   #submit the job!</code></pre>
 <div id="footer">
 <div id="footer-text">
 Version 2.0<br>
-Last updated 2015-07-04 08:51:43 EDT
+Last updated 2015-07-04 11:04:58 EDT
 </div>
 </div>
 </body>

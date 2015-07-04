@@ -8,7 +8,7 @@
 // make your own program. -Shaun Harker
 
 #include <iostream>
-#include "delegator/delegator.h" 
+#include "cluster-delegator.h" 
 
 void comment ( void ) {
   std::cout << "  This example generates pairs (i, j) where i and j differ by even amounts\n " 

@@ -1,4 +1,4 @@
-#include "delegator/delegator.h"
+#include "cluster-delegator.hpp"
 
 class Process : public Coordinator_Worker_Process {};
 
