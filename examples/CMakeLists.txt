@@ -77,6 +77,9 @@ set ( LIBS ${LIBS} ${Boost_LIBRARIES} ${MPI_LIBRARIES} )
 add_executable ( helloworld helloworld.cpp )
 target_link_libraries ( helloworld ${LIBS} )
 
+add_executable ( skeleton skeleton.cpp )
+target_link_libraries ( skeleton ${LIBS} )
+
 add_executable ( example1 example1.cpp )
 target_link_libraries ( example1 ${LIBS} )
 
@@ -85,6 +88,8 @@ target_link_libraries ( example2 ${LIBS} )
 
 if(MPI_COMPILE_FLAGS)
   set_target_properties(helloworld PROPERTIES
+    COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
+  set_target_properties(skeleton PROPERTIES
     COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
   set_target_properties(example1 PROPERTIES
     COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
@@ -95,13 +100,15 @@ endif()
 if(MPI_LINK_FLAGS)
   set_target_properties(helloworld PROPERTIES
     LINK_FLAGS "${MPI_LINK_FLAGS}")
+  set_target_properties(skeleton PROPERTIES
+    LINK_FLAGS "${MPI_LINK_FLAGS}")
   set_target_properties(example1 PROPERTIES
     LINK_FLAGS "${MPI_LINK_FLAGS}")
   set_target_properties(example2 PROPERTIES
     LINK_FLAGS "${MPI_LINK_FLAGS}")
 endif()
 
-install(TARGETS helloworld example1 example2 
+install(TARGETS helloworld skeleton example1 example2 
         RUNTIME DESTINATION ${CMAKE_SOURCE_DIR}/bin )
 
 #########
@@ -110,6 +117,7 @@ install(TARGETS helloworld example1 example2
 
 enable_testing()
 add_test( helloworldtest mpiexec -np 2 ${CMAKE_SOURCE_DIR}/build/bin/helloworld )
+add_test( skeletontest mpiexec -np 2 ${CMAKE_SOURCE_DIR}/build/bin/skeleton )
 add_test( test1 mpiexec -np 2 ${CMAKE_SOURCE_DIR}/build/bin/example1 )
 add_test( test2 mpiexec -np 2 ${CMAKE_SOURCE_DIR}/build/bin/example2 42 is the answer )
 
