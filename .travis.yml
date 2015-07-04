@@ -32,4 +32,4 @@ script:
   - cd ..
   - ./install.sh
 after_success: 
-  - coveralls -e examples -E ".*lib.*" -E ".*usr.*" -E ".*boost.*" --gcov-options '\-lp' --gcov /usr/bin/gcov-4.8
+  - coveralls -E ".*examples.*" -E ".*lib.*" -E ".*usr.*" -E ".*boost.*" --gcov-options '\-lp' --gcov /usr/bin/gcov-4.8
