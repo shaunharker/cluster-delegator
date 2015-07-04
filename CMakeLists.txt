@@ -72,8 +72,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # Recurse #
 ###########
 
-add_subdirectory ( examples )
 add_subdirectory ( source )
+add_subdirectory ( examples )
 
 #########
 # Tests #
