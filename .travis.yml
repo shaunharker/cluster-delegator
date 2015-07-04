@@ -27,6 +27,6 @@ install:
   - pip install cpp-coveralls --user `whoami`
   - ./.install/boost.sh serialization
 script: 
-  - ./install.sh
+  - ./install.sh --build=Debug
 after_success: 
   - coveralls -E ".*examples.*" -E ".*lib.*" -E ".*usr.*" -E ".*boost.*" --gcov-options '\-lp' --gcov /usr/bin/gcov-4.8
