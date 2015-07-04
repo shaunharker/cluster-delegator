@@ -1,20 +1,16 @@
 
-1. Build examples by typing
+1. Build examples by typing (from within this directory)
 
-make clean
-make
+../.install/build.sh
 
 2. Test examples by typing
 
-mpiexec -np 4 ./example1
+mpiexec -np 4 ./bin/example1
 
 and 
 
-mpiexec -np 4 ./example2 42 is the answer
+mpiexec -np 4 ./bin/example2 42 is the answer
 
 3. Take a look at the code: 
    example1.cpp
    example2.cpp
-   makefile
-
-
