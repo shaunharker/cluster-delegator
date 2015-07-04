@@ -16,7 +16,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
- 
+
 // Lower max message size to test if it will split them up
 #define CD_MAX_MESSAGE_SIZE 1024
 #include "delegator/delegator.h"
@@ -83,17 +83,21 @@ void Process::work ( Message & result_message,
   std::string result ( argv [ job % argc ] );
   // Push results into "results" message
   result_message << job;
-  result_message << result;
-  std::vector<int> garbage;
-  garbage . resize ( 1000000 );
+  std::vector<char> garbage;
+  garbage . resize ( 1024*1024 - 60 - result . size () );
   result_message << garbage;
+  result_message << result;
+
+  std::cout << result_message . str () . size () << "\n";
   std::cout << "Process::work --> worked job " << job << "\n";
 }
 
 inline void Process::accept ( const Message & result_message ) {
   int job_number;
+  std::vector<char> garbage;
   std::string result;
   result_message >> job_number;
+  result_message >> garbage;
   result_message >> result;
   std::cout << "Process::read --> Job " << job_number 
             << " processed with result " << result << "\n";
