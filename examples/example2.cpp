@@ -2,7 +2,7 @@
  *  main.cpp    Shaun Harker
  *  Example 2 of distrib project 
  *  This example is intended to show full use of all interfaces 
- *       initialize, write, work, read, and finalize as well as 
+ *       initialize, prepare, work, accept, and finalize as well as 
  *       command line argument usage
  *  build and run instructions:
  *  make clean
