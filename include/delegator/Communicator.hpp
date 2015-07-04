@@ -11,6 +11,7 @@
 #include <algorithm>
 
 #define MAX_MESSAGE_SIZE 1073741824L
+#define DEBUG if(0)
 
 #ifndef TICKTIME
 #define TICKTIME ((double)(std::chrono::system_clock::now().time_since_epoch().count()%1000000000LL))/1000000.0
@@ -48,8 +49,9 @@ daemon ( void ) {
     int flag = 0;
     MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status);
     if ( flag ) action = 1; // receive
-
+#ifdef CD_COMM_LOGGING
     if ( flag ) std::cout << TICKTIME << " : Communicator::daemon (" << SELF << ") receive flag\n";
+#endif
     // Check if there is a message to send
     mtx . lock ();
     if ( not outbox . empty () ) action = 2; // send (overrides receive)
@@ -60,18 +62,25 @@ daemon ( void ) {
  
     switch ( action ) {
       case 0: // sleep
+#ifdef CD_COMM_LOGGING
         mtx . lock ();
         std::cout << TICKTIME << " : Communicator::daemon (" << SELF << ") Sleep begin\n";
         mtx . unlock ();
+#endif
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
+#ifdef CD_COMM_LOGGING
         mtx . lock ();
         std::cout << TICKTIME << " : Communicator::daemon (" << SELF << ") Sleep end\n";
         mtx . unlock ();
+#endif
         break;
       case 1: // receive
       {
+#ifdef CD_COMM_LOGGING
+        mtx . lock ();
         std::cout << TICKTIME << " : Communicator::daemon (" << SELF << ") receive begin\n";
-
+        mtx . unlock ();
+#endif
         /* Get the length of the message */
         int buffer_length;
         int error_code = MPI_Get_count(&status, MPI_CHAR, &buffer_length);
@@ -82,7 +91,9 @@ daemon ( void ) {
         std::string & text = incoming [ channel ];
         if ( buffer_length == 0 ) { 
           /* Edge case: message is integer multiple of GB size */
+#ifdef CD_COMM_LOGGING
           std::cout << TICKTIME << " : Communicator::daemon (" << SELF << ") receiving packet (stub)\n";
+#endif
           MPI_Recv ( NULL, 0, MPI_CHAR, channel, tag, MPI_COMM_WORLD, &status );
         } else {
           /* Allocate space for the message */
@@ -90,18 +101,24 @@ daemon ( void ) {
           text . resize ( N + (uint64_t) buffer_length );
           char * buffer = &text[N];
           /* Receive the message */
+#ifdef CD_COMM_LOGGING
           std::cout << TICKTIME << " : Communicator::daemon (" << SELF << ") receiving packet\n";
+#endif
           MPI_Recv ( buffer, buffer_length, MPI_CHAR, channel, tag, MPI_COMM_WORLD, &status );
         }
         if ( buffer_length < MAX_MESSAGE_SIZE ) { 
+#ifdef CD_COMM_LOGGING
           std::cout << TICKTIME << " : Communicator::daemon (" << SELF << ") last packet; creating message\n";
+#endif
           Message message;
           message . str ( text );
           message . tag = tag;
           inbox . push ( std::make_pair ( channel, message ) );
           text . clear ();
         }
+#ifdef CD_COMM_LOGGING
         std::cout << TICKTIME << " : Communicator::daemon (" << SELF << ") receive end\n";
+#endif
         mtx . unlock ();
         break;
       }
@@ -109,7 +126,9 @@ daemon ( void ) {
       {
         // Retrieve the message
         mtx . lock ();
+#ifdef CD_COMM_LOGGING
         std::cout << TICKTIME << " : Communicator::daemon (" << SELF << ") send begin\n";
+#endif
         std::pair<Channel, Message> pair = outbox . front ();
         outbox . pop ();
         mtx . unlock ();
@@ -122,18 +141,22 @@ daemon ( void ) {
         if ( N == 0 ) edge_case = true;
         while ( N > 0 ) {
           int submessage_length = std::min ( (uint64_t) MAX_MESSAGE_SIZE, N );
+#ifdef CD_COMM_LOGGING
           mtx . lock ();
           std::cout << TICKTIME << " : Communicator::daemon (" << SELF << ") sending packet of length " << submessage_length << "\n";
           mtx . unlock ();
+#endif
           MPI_Send ( const_cast<char *> ( text . data () + begin ), 
                      submessage_length,
                      MPI_CHAR, 
                      channel, 
                      tag, 
                      MPI_COMM_WORLD );
+#ifdef CD_COMM_LOGGING
           mtx . lock ();
           std::cout << TICKTIME << " : Communicator::daemon (" << SELF << ") finished sending packet of length " << submessage_length << "\n";
           mtx . unlock ();
+#endif
           begin += submessage_length;
           N -= submessage_length;
           if ( submessage_length == MAX_MESSAGE_SIZE && N == 0 ) { 
@@ -142,9 +165,11 @@ daemon ( void ) {
         }
         /* Edge case must send addition zero-length message */
         if ( edge_case ) {
+#ifdef CD_COMM_LOGGING
           mtx . lock ();
           std::cout << TICKTIME << " : Communicator::daemon (" << SELF << ") sending packet (stub)\n";
           mtx . unlock ();
+#endif
           MPI_Send ( NULL,
                      0,
                      MPI_CHAR, 
@@ -152,9 +177,11 @@ daemon ( void ) {
                      tag, 
                      MPI_COMM_WORLD ); 
         }
+#ifdef CD_COMM_LOGGING
         mtx . lock ();
         std::cout << TICKTIME << " : Communicator::daemon (" << SELF << ") send end\n";
         mtx . unlock ();
+#endif
         break;
       }
     }
@@ -167,8 +194,10 @@ send ( const Message & message,
        const Channel & channel ) {
   mtx . lock ();
   outbox . push ( std::make_pair ( channel, message ) );
+#ifdef CD_COMM_LOGGING
   std::cout << TICKTIME << " : Communicator::send (" << SELF << ") Pushing to outbox a message with tag " << message.tag << "\n";
   std::cout << TICKTIME << " : Communicator::send (" << SELF << ") Outbox is now non-empty (" << outbox.size() << " messages)\n";
+#endif
   mtx . unlock ();
 }
 
@@ -183,8 +212,10 @@ receive ( Message * message,
       continue;
     }
     std::pair<Channel, Message> pair = inbox . front ();
+#ifdef CD_COMM_LOGGING
     std::cout << TICKTIME << " : Communicator::receive (" << SELF << ") Inbox non-empty (" << inbox.size() << " messages)\n";
     std::cout << TICKTIME << " : Communicator::receive (" << SELF << ") Popping from inbox a message with tag " << pair.second.tag << "\n";
+#endif
     inbox . pop ();
     mtx . unlock ();
     *channel = pair . first;
