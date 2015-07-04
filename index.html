@@ -896,18 +896,6 @@ job_message &lt;&lt; jobdata4;</code></pre>
 <div class="paragraph">
 <p>Only one of these processes has a return value, which is <code>prepare</code>. It returns 0, 1, or 2, depending on the situation. For simple programs, it returns 0 while it is producing jobs, and then switches to returning 1 to indicate there are no jobs left. More sophisticated programs might make use of the "2 option". The "2 option" says "There will be more jobs, but not right now." This would be used in the situation where results need to be `accept`ed first to determine what ought to be computed next.</p>
 </div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">
-The 2 option (i.e. "no jobs for now, maybe later") has not yet been tested!
-</td>
-</tr>
-</table>
-</div>
 </div>
 </div>
 <div class="sect1">
@@ -1330,7 +1318,7 @@ qsub script.sh   #submit the job!</code></pre>
 <div id="footer">
 <div id="footer-text">
 Version 2.0<br>
-Last updated 2015-07-04 05:19:51 EDT
+Last updated 2015-07-04 08:51:43 EDT
 </div>
 </div>
 </body>
