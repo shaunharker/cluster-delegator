@@ -71,7 +71,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # Build #
 #########
 
-set ( LIBS ${LIBS} ${Boost_LIBRARIES} ${MPI_LIBRARIES} dsgrn sqlite3 )
+set ( LIBS ${LIBS} ${Boost_LIBRARIES} ${MPI_LIBRARIES} )
 
 add_executable ( example1 example1.cpp )
 target_link_libraries ( example1 ${LIBS} )
