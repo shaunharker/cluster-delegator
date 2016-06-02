@@ -13,6 +13,7 @@ echo >> $OUTFILE && echo '*/' >> $OUTFILE
 echo >> $OUTFILE && echo '#ifndef CLUSTERDELEGATOR_HPP_INCLUDED' >> $OUTFILE
 echo '#define CLUSTERDELEGATOR_HPP_INCLUDED' >> $OUTFILE
 echo '#define CLUSTER_DELEGATOR_IS_AMALGAMATION' >> $OUTFILE
+echo '#define INLINE_IF_HEADER_ONLY inline' >> $OUTFILE
 echo >> $OUTFILE && cat include/delegator/Message.h >> $OUTFILE
 echo >> $OUTFILE && cat include/delegator/Message.hpp >> $OUTFILE
 echo >> $OUTFILE && cat include/delegator/Communicator.h >> $OUTFILE
