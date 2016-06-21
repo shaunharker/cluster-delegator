@@ -45,6 +45,7 @@ initialize ( void ) {
 
 INLINE_IF_HEADER_ONLY void Communicator::
 finalize ( void ) {
+  if ( not coordinating () ) return;
   // Shut-down message
   int numtasks;
   MPI_Comm_size(MPI_COMM_WORLD,&numtasks);
