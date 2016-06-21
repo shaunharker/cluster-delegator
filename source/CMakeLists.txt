@@ -2,7 +2,8 @@
 
 set ( LIBS      ${LIBS}
                 ${Boost_LIBRARIES}
-                ${MPI_LIBRARIES} )
+                ${MPI_LIBRARIES}
+                ${CMAKE_THREAD_LIBS_INIT} )
 
 add_library ( libcluster-delegator STATIC cluster-delegator.cpp )
 set_target_properties( libcluster-delegator PROPERTIES OUTPUT_NAME cluster-delegator )

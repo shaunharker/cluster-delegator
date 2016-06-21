@@ -1,5 +1,5 @@
 
-set ( LIBS ${LIBS} ${Boost_LIBRARIES} ${MPI_LIBRARIES} )
+set ( LIBS ${LIBS} ${Boost_LIBRARIES} ${MPI_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} )
 
 add_executable ( helloworld helloworld.cpp )
 target_link_libraries ( helloworld ${LIBS} )
